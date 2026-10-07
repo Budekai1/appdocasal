@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Casal - Organização e Finanças a Dois</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#FF6584">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="App Casal">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Estilos CSS Embutidos para Versão Completa e Pronta para Uso -->
+    <style>
+        :root {
+            --primary: #FF6584;
+            --primary-light: #FFE3E9;
+            --secondary: #6C63FF;
+            --success: #2ECC71;
+            --success-light: #E8F8F0;
+            --danger: #E74C3C;
+            --danger-light: #FADBD8;
+            --warning: #F1C40F;
+            --warning-light: #FEF9E7;
+            --info: #3498DB;
+            --info-light: #EBF5FB;
+            --dark: #2C3E50;
+            --light: #F8F9FA;
+            --gray: #95A5A6;
+            --gray-light: #ECF0F1;
+            --border: #E2E8F0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #F4F7F6;
+            color: var(--dark);
+            padding-bottom: 90px;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        header {
+            background: #FFFFFF;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-brand i {
+            font-size: 24px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .app-brand h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .app-brand span {
+            font-size: 11px;
+            color: var(--gray);
+            display: block;
+        }
+
+        .user-avatar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar-group img, .avatar-placeholder {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Container Principal & Abas */
+        .container {
+            padding: 16px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bottom Navigation */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 4px;
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 10px;
+            font-weight: 500;
+            gap: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        /* Cards & UI Components */
+        .card {
+            background: #FFFFFF;
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Dashboard Overview */
+        .balance-hero {
+            background: linear-gradient(135deg, #FF6584, #FF8E53);
+            color: white;
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(255, 101, 132, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-hero::after {
+            content: '\f53a';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: -10px;
+            bottom: -20px;
+            font-size: 100px;
+            opacity: 0.15;
+        }
+
+        .balance-hero .label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-hero .amount {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 6px 0 16px 0;
+        }
+
+        .balance-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 12px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .metric-card .m-title {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .metric-card .m-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 4px;
+        }
+
+        .metric-card.success .m-value { color: var(--success); }
+        .metric-card.danger .m-value { color: var(--danger); }
+        .metric-card.info .m-value { color: var(--info); }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: var(--light);
+            color: var(--dark);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 101, 132, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(255, 101, 132, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-urgent { background: var(--danger-light); color: var(--danger); }
+        .badge-important { background: var(--warning-light); color: #D4AC0D; }
+        .badge-waiting { background: var(--success-light); color: var(--success); }
+        
+        .badge-status-pending { background: var(--warning-light); color: #B7950B; }
+        .badge-status-planned { background: var(--info-light); color: var(--info); }
+        .badge-status-bought { background: var(--success-light); color: var(--success); }
+        .badge-status-canceled { background: var(--gray-light); color: var(--gray); }
+
+        /* List Items (Casa & Finanças & Objetivos) */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .list-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .list-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .list-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .list-card-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--gray);
+            border-top: 1px dashed var(--border);
+            padding-top: 6px;
+        }
+
+        .action-icon-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--gray);
+            transition: var(--transition);
+            padding: 4px;
+        }
+
+        .icon-btn.edit:hover { color: var(--info); }
+        .icon-btn.delete:hover { color: var(--danger); }
+        .icon-btn.check:hover { color: var(--success); }
+
+        /* Categorias Grid / Filter */
+        .filter-chips {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: none;
+        }
+
+        .filter-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: var(--gray-light);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Log de Atividades (Quem Fez O Quê) */
+        .activity-log {
+            font-size: 11px;
+            color: var(--gray);
+            background: var(--light);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary);
+            margin-top: 10px;
+        }
+
+        /* Modal customizado */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: modalPop 0.3s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* PWA Banner */
+        .pwa-banner {
+            background: var(--info-light);
+            border: 1px solid var(--info);
+            color: var(--dark);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <header>
+        <div class="app-brand">
+            <i class="fa-solid fa-house-heart"></i>
+            <div>
+                <h1>App Casal</h1>
+                <span>Organização & Finanças</span>
+            </div>
+        </div>
+        <div class="user-avatar-group">
+            <div class="avatar-placeholder" id="currentUserAvatar" title="Usuário Atual">J</div>
+            <span id="currentUserName" style="font-size: 12px; font-weight: 600;">João</span>
+            <button onclick="toggleUser()" class="icon-btn" style="margin-left: 4px;" title="Trocar de Parceiro"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container">
+
+        <!-- AB 1: INÍCIO / DASHBOARD -->
+        <section id="tab-home" class="tab-content active">
+            <!-- PWA Instalação / Alerta útil -->
+            <div class="pwa-banner" id="pwaBanner">
+                <span><i class="fa-solid fa-mobile-screen"></i> Adicione à tela inicial para acesso rápido!</span>
+                <button class="btn" style="width: auto; padding: 6px 12px; font-size: 11px;" onclick="installPWA()">Instalar</button>
+            </div>
+
+            <!-- Saldo Hero Card -->
+            <div class="balance-hero">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div class="label">Saldo Disponível na Casa</div>
+                        <div class="amount" id="lblSaldoAtual">R$ 0,00</div>
+                    </div>
+                    <button class="icon-btn" style="background: rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 50%;" onclick="openModalSaldo()" title="Atualizar Saldo">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+                <div class="balance-meta">
+                    <div><i class="fa-regular fa-calendar"></i> <span id="lblUltimaData">--/--/----</span></div>
+                    <div><i class="fa-solid fa-clock-rotate-left"></i> <span id="lblDiasAtras">Atualizado hoje</span></div>
+                </div>
+            </div>
+
+            <!-- Métricas Principais -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="m-title">Renda Total</div>
+                    <div class="m-value" id="lblRendaTotal">R$ 0,00</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="m-title">Gastos no Mês</div>
+                    <div class="m-value" id="lblGastosMes">R$ 0,00</div>
+                </div>
+                <div class="metric-card info">
+                    <div class="m-title">Planejado Casa</div>
+                    <div class="m-value" id="lblPlanejadoCasa">R$ 0,00</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="m-title">Sobra Estimada</div>
+                    <div class="m-value" id="lblSobraEstimada">R$ 0,00</div>
+                </div>
+            </div>
+
+            <!-- Resumo Orçamento / Status Rápido -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-chart-pie"></i> Saúde Financeira do Mês</span>
+                    <span id="lblStatusOrcamentoBadge" class="badge badge-waiting">Dentro do Orçamento</span>
+                </div>
+                <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;" id="lblResumoOrcamentoTexto">Tudo sob controle por aqui!</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="barSaudeFinanceira" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Atividade Recente / Log do Casal -->
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-timeline"></i> Atividade do Casal</span></div>
+                <div id="homeActivityLogContainer" class="item-list">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: CASA (Itens, Compras, Organização) -->
+        <section id="tab-casa" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Organização da Casa</h2>
+                <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalItemCasa()">
+                    <i class="fa-solid fa-plus"></i> Novo Item
+                </button>
+            </div>
+
+            <!-- Filtros por Categoria -->
+            <div class="filter-chips" id="casaFilterChips">
+                <div class="chip active" onclick="filterCasa('todos')">Todos</div>
+                <div class="chip" onclick="filterCasa('Cozinha')">🍳 Cozinha</div>
+                <div class="chip" onclick="filterCasa('Quarto')">🛏️ Quarto</div>
+                <div class="chip" onclick="filterCasa('Banheiro')">🚿 Banheiro</div>
+                <div class="chip" onclick="filterCasa('Sala')">🛋️ Sala</div>
+                <div class="chip" onclick="filterCasa('Tecnologia')">💻 Tecnologia</div>
+                <div class="chip" onclick="filterCasa('Lavanderia')">🧺 Lavanderia</div>
+                <div class="chip" onclick="filterCasa('Lazer')">🎮 Lazer</div>
+            </div>
+
+            <!-- Lista de Itens da Casa -->
+            <div class="item-list" id="casaListContainer">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+        <!-- ABA 3: FINANÇAS (Renda, Contas, Planejamento) -->
+        <section id="tab-financas" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-wallet"></i> Controle Financeiro</h2>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 11px;" onclick="openModalRenda()">Renda</button>
+                    <button class="btn" style="width: auto; padding: 6px 10px; font-size: 11px;" onclick="openModalConta()">Nova Conta</button>
+                </div>
+            </div>
+
+            <!-- Seção de Contas -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-file-invoice-dollar"></i> Contas & Despesas Fixas</span>
+                </div>
+                <div class="item-list" id="financasContasContainer" style="margin-bottom: 14px;">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- Seção Planejamento por Categoria x Gasto Real -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-scale-balanced"></i> Orçamento Planejado x Real</span>
+                    <button class="icon-btn" onclick="openModalOrcamento()"><i class="fa-solid fa-gear"></i></button>
+                </div>
+                <div class="item-list" id="financasOrcamentoContainer">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 4: OBJETIVOS & INVESTIMENTOS -->
+        <section id="tab-objetivos" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas & Melhorias</h2>
+                <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalObjetivo()">
+                    <i class="fa-solid fa-plus"></i> Novo Objetivo
+                </button>
+            </div>
+
+            <div class="item-list" id="objetivosContainer">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+        <!-- ABA 5: CONFIGURAÇÕES & HISTÓRICO DE SALDO -->
+        <section id="tab-config" class="tab-content">
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-chart-line"></i> Histórico de Saldos</span></div>
+                <div class="item-list" id="historicoSaldoContainer">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Sincronização & Parceiro</span></div>
+                <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
+                    Este aplicativo agora está conectado ao <b>Firebase</b>. Qualquer alteração é sincronizada em tempo real com o outro dispositivo.
+                </p>
+                <div class="form-group">
+                    <label>Seu Nome / Apelido</label>
+                    <input type="text" id="inputNomeUsuario" value="João" onchange="atualizarNomeUsuario(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Nome do Parceiro(a)</label>
+                    <input type="text" id="inputNomeParceiro" value="Maria" onchange="atualizarNomeParceiro(this.value)">
+                </div>
+                <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Exportar Dados (Backup)</button>
+                <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Dados do App</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('home', this)">
+            <i class="fa-solid fa-house"></i>
+            <span>Início</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('casa', this)">
+            <i class="fa-solid fa-couch"></i>
+            <span>Casa</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('financas', this)">
+            <i class="fa-solid fa-wallet"></i>
+            <span>Finanças</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('objetivos', this)">
+            <i class="fa-solid fa-bullseye"></i>
+            <span>Objetivos</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('config', this)">
+            <i class="fa-solid fa-gear"></i>
+            <span>Ajustes</span>
+        </button>
+    </nav>
+
+    <!-- MODAIS DO SISTEMA -->
+
+    <!-- Modal: Atualizar Saldo -->
+    <div class="modal-overlay" id="modalSaldo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-coins"></i> Atualizar Saldo Disponível</div>
+                <button class="icon-btn" onclick="closeModal('modalSaldo')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Novo Saldo da Casa (R$)</label>
+                <input type="number" id="modalSaldoValor" step="0.01" placeholder="Ex: 2850.00">
+            </div>
+            <div class="form-group">
+                <label>Observação (Opcional)</label>
+                <input type="text" id="modalSaldoObs" placeholder="Ex: Entrada do salário, pagamento extra...">
+            </div>
+            <button class="btn" onclick="salvarNovoSaldo()">Salvar Saldo</button>
+        </div>
+    </div>
+
+    <!-- Modal: Novo Item da Casa / Compras -->
+    <div class="modal-overlay" id="modalItemCasa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalItemCasaTitulo">Adicionar Item / Necessidade</div>
+                <button class="icon-btn" onclick="closeModal('modalItemCasa')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="editItemId">
+            <div class="form-group">
+                <label>Nome do Item / Necessidade</label>
+                <input type="text" id="itemNome" placeholder="Ex: Comprar frigideira nova" oninput="autoCategorizar(this.value)">
+            </div>
+            <div class="form-group">
+                <label>Categoria (Identificada por IA)</label>
+                <select id="itemCategoria">
+                    <option value="Cozinha">🍳 Cozinha</option>
+                    <option value="Quarto">🛏️ Quarto</option>
+                    <option value="Banheiro">🚿 Banheiro</option>
+                    <option value="Sala">🛋️ Sala</option>
+                    <option value="Tecnologia">💻 Tecnologia</option>
+                    <option value="Lavanderia">🧺 Lavanderia</option>
+                    <option value="Lazer">🎮 Lazer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Prioridade</label>
+                <select id="itemPrioridade">
+                    <option value="Urgente">🔴 Urgente</option>
+                    <option value="Importante" selected>🟡 Importante</option>
+                    <option value="Pode esperar">🟢 Pode esperar</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="itemStatus">
+                    <option value="Pendente" selected>Pendente</option>
+                    <option value="Planejado">Planejado</option>
+                    <option value="Comprado">Comprado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Valor Estimado (R$)</label>
+                <input type="number" id="itemValorEstimado" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Valor Real Pago (R$) (Preencher ao comprar)</label>
+                <input type="number" id="itemValorReal" step="0.01" placeholder="0.00">
+            </div>
+            <button class="btn" onclick="salvarItemCasa()">Salvar Item</button>
+        </div>
+    </div>
+
+    <!-- Modal: Cadastrar / Editar Conta -->
+    <div class="modal-overlay" id="modalConta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Cadastrar Conta / Despesa</div>
+                <button class="icon-btn" onclick="closeModal('modalConta')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="editContaId">
+            <div class="form-group">
+                <label>Nome da Conta</label>
+                <input type="text" id="contaNome" placeholder="Ex: Aluguel, Energia, Internet...">
+            </div>
+            <div class="form-group">
+                <label>Categoria Orçamentária</label>
+                <select id="contaCategoria">
+                    <option value="Casa">Casa (Aluguel/Manutenção)</option>
+                    <option value="Mercado">Mercado & Alimentação</option>
+                    <option value="Contas Fixas">Contas Fixas (Água, Luz, Net)</option>
+                    <option value="Lazer">Lazer & Passeios</option>
+                    <option value="Tecnologia">Tecnologia & Eletrônicos</option>
+                    <option value="Outros">Outras Despesas</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="contaValor" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Data de Vencimento</label>
+                <input type="date" id="contaVencimento">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="contaStatus">
+                    <option value="pendente">Pendente</option>
+                    <option value="paga">Paga</option>
+                </select>
+            </div>
+            <button class="btn" onclick="salvarConta()">Salvar Conta</button>
+        </div>
+    </div>
+
+    <!-- Modal: Cadastrar Renda -->
+    <div class="modal-overlay" id="modalRenda">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Cadastrar Renda do Casal</div>
+                <button class="icon-btn" onclick="closeModal('modalRenda')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Salário / Renda Parceiro 1 (<span id="lblNomeP1">João</span>)</label>
+                <input type="number" id="rendaP1" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Salário / Renda Parceiro 2 (<span id="lblNomeP2">Maria</span>)</label>
+                <input type="number" id="rendaP2" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Rendas Extras do Mês</label>
+                <input type="number" id="rendaExtra" step="0.01" placeholder="0.00">
+            </div>
+            <button class="btn" onclick="salvarRenda()">Atualizar Rendas</button>
+        </div>
+    </div>
+
+    <!-- Modal: Configurar Orçamento Mensal -->
+    <div class="modal-overlay" id="modalOrcamento">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Planejamento de Gastos Mensais</div>
+                <button class="icon-btn" onclick="closeModal('modalOrcamento')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Orçamento Casa (R$)</label>
+                <input type="number" id="orcCasa" step="1.00">
+            </div>
+            <div class="form-group">
+                <label>Orçamento Mercado (R$)</label>
+                <input type="number" id="orcMercado" step="1.00">
+            </div>
+            <div class="form-group">
+                <label>Orçamento Contas Fixas (R$)</label>
+                <input type="number" id="orcContasFixas" step="1.00">
+            </div>
+            <div class="form-group">
+                <label>Orçamento Lazer (R$)</label>
+                <input type="number" id="orcLazer" step="1.00">
+            </div>
+            <div class="form-group">
+                <label>Orçamento Tecnologia (R$)</label>
+                <input type="number" id="orcTecnologia" step="1.00">
+            </div>
+            <div class="form-group">
+                <label>Planejado para Investimentos/Melhorias (R$)</label>
+                <input type="number" id="orcInvestimentos" step="1.00">
+            </div>
+            <button class="btn" onclick="salvarOrcamento()">Salvar Planejamento</button>
+        </div>
+    </div>
+
+    <!-- Modal: Novo Objetivo / Meta -->
+    <div class="modal-overlay" id="modalObjetivo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Novo Objetivo / Meta da Casa</div>
+                <button class="icon-btn" onclick="closeModal('modalObjetivo')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="editObjetivoId">
+            <div class="form-group">
+                <label>Nome do Objetivo</label>
+                <input type="text" id="objNome" placeholder="Ex: Comprar Sofá Novo">
+            </div>
+            <div class="form-group">
+                <label>Valor Desejado (R$)</label>
+                <input type="number" id="objValorDesejado" step="0.01" placeholder="3000.00">
+            </div>
+            <div class="form-group">
+                <label>Valor Já Guardado / Reservado (R$)</label>
+                <input type="number" id="objValorGuardado" step="0.01" placeholder="1200.00">
+            </div>
+            <div class="form-group">
+                <label>Prazo Estimado</label>
+                <input type="date" id="objPrazo">
+            </div>
+            <button class="btn" onclick="salvarObjetivo()">Salvar Objetivo</button>
+        </div>
+    </div>
+
+    <!-- FIREBASE E LÓGICA DO APLICATIVO -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDu2E1Wxa7AGUhmpGkJ_OxnGGyEWnHHyqs",
+            authDomain: "appcasal-f98c5.firebaseapp.com",
+            projectId: "appcasal-f98c5",
+            storageBucket: "appcasal-f98c5.firebasestorage.app",
+            messagingSenderId: "538080655469",
+            appId: "1:538080655469:web:8772936e5ea7133c7d6764",
+            measurementId: "G-TP4WGE57QN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Estado Global da Aplicação
+        window.appData = {
+            usuarioAtual: 'João',
+            parceiroNome: 'Maria',
+            saldoAtual: 2850.00,
+            ultimaAtualizacaoSaldo: '2026-08-12T10:00:00',
+            renda: { p1: 4500.00, p2: 3800.00, extra: 500.00 },
+            orcamento: {
+                Casa: 1000.00,
+                Mercado: 800.00,
+                'Contas Fixas': 1200.00,
+                Lazer: 300.00,
+                Tecnologia: 200.00,
+                Investimentos: 500.00
+            },
+            itensCasa: [
+                { id: 1, nome: 'Comprar frigideira', categoria: 'Cozinha', prioridade: 'Urgente', status: 'Pendente', valorEst: 120, valorReal: 0, criadoPor: 'João', data: '2026-08-18' },
+                { id: 2, nome: 'Comprar lençol', categoria: 'Quarto', prioridade: 'Importante', status: 'Comprado', valorEst: 150, valorReal: 140, criadoPor: 'Maria', data: '2026-08-14' },
+                { id: 3, nome: 'Trocar torneira', categoria: 'Banheiro', prioridade: 'Urgente', status: 'Pendente', valorEst: 90, valorReal: 0, criadoPor: 'João', data: '2026-08-19' }
+            ],
+            contas: [
+                { id: 1, nome: 'Aluguel', categoria: 'Casa', valor: 1400, vencimento: '2026-08-10', status: 'paga' },
+                { id: 2, nome: 'Energia', categoria: 'Contas Fixas', valor: 145, vencimento: '2026-08-15', status: 'paga' },
+                { id: 3, nome: 'Internet', categoria: 'Contas Fixas', valor: 100, vencimento: '2026-08-25', status: 'pendente' }
+            ],
+            objetivos: [
+                { id: 1, nome: 'Comprar sofá', valorDesejado: 3000, valorGuardado: 1200, prazo: '2026-12-20' },
+                { id: 2, nome: 'Reformar cozinha', valorDesejado: 5000, valorGuardado: 2500, prazo: '2026-11-30' }
+            ],
+            historicoSaldo: [
+                { data: '2026-08-12 10:00', valor: 2850.00, obs: 'Atualização quinzenal' },
+                { data: '2026-08-01 09:00', valor: 2100.00, obs: 'Virada de mês' }
+            ],
+            atividades: [
+                { texto: 'Maria marcou: Aluguel — R$ 1.400 — paga', data: '12/08/2026' },
+                { texto: 'João adicionou: Comprar frigideira — R$ 120', data: '18/08/2026' }
+            ]
+        };
+
+        // Funções Globais de Sincronização e Salvamento
+        window.salvarDados = async function() {
+            try {
+                await setDoc(doc(db, "dados", "app_casal"), window.appData);
+                console.log("Dados salvos na nuvem do Firebase com sucesso!");
+            } catch (e) {
+                console.error("Erro ao salvar no Firebase:", e);
+            }
+            localStorage.setItem('app_casal_data_v1', JSON.stringify(window.appData));
+            window.atualizarInterface();
+        }
+
+        function carregarDadosFirebase() {
+            onSnapshot(doc(db, "dados", "app_casal"), (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    window.appData = docSnapshot.data();
+                    window.atualizarInterface();
+                    console.log("Dados sincronizados em tempo real do Firebase.");
+                } else {
+                    // Se não existir, cria o primeiro registro na nuvem com os dados padrão
+                    window.salvarDados();
+                }
+            }, (error) => {
+                console.error("Erro ao escutar dados do Firebase:", error);
+                // Fallback para localStorage caso haja falha de rede
+                const saved = localStorage.getItem('app_casal_data_v1');
+                if (saved) {
+                    try { window.appData = JSON.parse(saved); } catch(e) {}
+                }
+                window.atualizarInterface();
+            });
+        }
+
+        // Inicialização ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDadosFirebase();
+            document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual;
+            document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome;
+            document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual;
+            document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
+            
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                document.getElementById('pwaBanner').style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- LÓGICA DA INTERFACE E FUNÇÕES DE MANIPULAÇÃO -->
+    <script>
+        window.switchTab = function(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            if(el) el.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        window.toggleUser = function() {
+            let temp = appData.usuarioAtual;
+            appData.usuarioAtual = appData.parceiroNome;
+            appData.parceiroNome = temp;
+            
+            document.getElementById('currentUserAvatar').innerText = appData.usuarioAtual.charAt(0).toUpperCase();
+            document.getElementById('currentUserName').innerText = appData.usuarioAtual;
+            document.getElementById('inputNomeUsuario').value = appData.usuarioAtual;
+            document.getElementById('inputNomeParceiro').value = appData.parceiroNome;
+            document.getElementById('lblNomeP1').innerText = appData.usuarioAtual;
+            document.getElementById('lblNomeP2').innerText = appData.parceiroNome;
+            
+            salvarDados();
+        }
+
+        window.atualizarNomeUsuario = function(nome) {
+            if(!nome) return;
+            appData.usuarioAtual = nome;
+            document.getElementById('currentUserAvatar').innerText = nome.charAt(0).toUpperCase();
+            document.getElementById('currentUserName').innerText = nome;
+            document.getElementById('lblNomeP1').innerText = nome;
+            salvarDados();
+        }
+
+        window.atualizarNomeParceiro = function(nome) {
+            if(!nome) return;
+            appData.parceiroNome = nome;
+            document.getElementById('lblNomeP2').innerText = nome;
+            salvarDados();
+        }
+
+        function calcularFinancas() {
+            let rendaTotal = (parseFloat(appData.renda.p1) || 0) + (parseFloat(appData.renda.p2) || 0) + (parseFloat(appData.renda.extra) || 0);
+            
+            let gastosItensCasa = appData.itensCasa
+                .filter(i => i.status === 'Comprado')
+                .reduce((acc, i) => acc + (parseFloat(i.valorReal) || parseFloat(i.valorEst) || 0), 0);
+                
+            let gastosContas = appData.contas
+                .filter(c => c.status === 'paga')
+                .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+
+            let totalGastosMes = gastosItensCasa + gastosContas;
+            let totalPlanejadoCasa = Object.values(appData.orcamento).reduce((a, b) => a + (parseFloat(b) || 0), 0);
+            let sobraEstimada = rendaTotal - totalGastosMes;
+
+            let ultimaData = new Date(appData.ultimaAtualizacaoSaldo);
+            let hoje = new Date(2026, 9, 7); // Data atual simulada (outubro de 2026)
+            let diffTime = Math.abs(hoje - ultimaData);
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            return {
+                rendaTotal,
+                totalGastosMes,
+                totalPlanejadoCasa,
+                sobraEstimada,
+                diffDays: isNaN(diffDays) ? 0 : diffDays
+            };
+        }
+
+        window.atualizarInterface = function() {
+            const fin = calcularFinancas();
+
+            document.getElementById('lblSaldoAtual').innerText = formatarMoeda(appData.saldoAtual);
+            document.getElementById('lblUltimaData').innerText = new Date(appData.ultimaAtualizacaoSaldo).toLocaleDateString('pt-BR');
+            document.getElementById('lblDiasAtras').innerText = fin.diffDays === 0 ? 'Atualizado hoje' : `Atualizado há ${fin.diffDays} dias`;
+
+            document.getElementById('lblRendaTotal').innerText = formatarMoeda(fin.rendaTotal);
+            document.getElementById('lblGastosMes').innerText = formatarMoeda(fin.totalGastosMes);
+            document.getElementById('lblPlanejadoCasa').innerText = formatarMoeda(fin.totalPlanejadoCasa);
+            document.getElementById('lblSobraEstimada').innerText = formatarMoeda(fin.sobraEstimada);
+
+            let pctGastos = fin.rendaTotal > 0 ? (fin.totalGastosMes / fin.rendaTotal) * 100 : 0;
+            document.getElementById('barSaudeFinanceira').style.width = Math.min(pctGastos, 100) + '%';
+            if (pctGastos > 90) {
+                document.getElementById('barSaudeFinanceira').style.background = 'var(--danger)';
+                document.getElementById('lblStatusOrcamentoBadge').className = 'badge badge-urgent';
+                document.getElementById('lblStatusOrcamentoBadge').innerText = 'Atenção aos Gastos';
+                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Vocês estão gastando mais de 90% da renda!';
+            } else {
+                document.getElementById('barSaudeFinanceira').style.background = 'var(--success)';
+                document.getElementById('lblStatusOrcamentoBadge').className = 'badge badge-waiting';
+                document.getElementById('lblStatusOrcamentoBadge').innerText = 'Dentro do Orçamento';
+                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Controle financeiro equilibrado no mês.';
+            }
+
+            renderizarItensCasa();
+            renderizarContas();
+            renderizarOrcamento();
+            renderizarObjetivos();
+            renderizarHistoricoSaldo();
+            renderizarAtividades();
+        }
+
+        // --- MANIPULAÇÃO DE ITENS DA CASA ---
+        let filtroCategoriaAtual = 'todos';
+
+        window.filterCasa = function(cat) {
+            filtroCategoriaAtual = cat;
+            document.querySelectorAll('#casaFilterChips .chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            renderizarItensCasa();
+        }
+
+        window.autoCategorizar = function(texto) {
+            let t = texto.toLowerCase();
+            let catSelect = document.getElementById('itemCategoria');
+            if(t.includes('frigideira') || t.includes('panela') || t.includes('copo') || t.includes('prato') || t.includes('micro-ondas')) catSelect.value = 'Cozinha';
+            else if(t.includes('lençol') || t.includes('travesseiro') || t.includes('cama') || t.includes('colchão')) catSelect.value = 'Quarto';
+            else if(t.includes('saboneteira') || t.includes('toalha') || t.includes('torneira') || t.includes('chuveiro')) catSelect.value = 'Banheiro';
+            else if(t.includes('sofá') || t.includes('tapete') || t.includes('quadro') || t.includes('cortina')) catSelect.value = 'Sala';
+            else if(t.includes('roteador') || t.includes('computador') || t.includes('cabo') || t.includes('tv')) catSelect.value = 'Tecnologia';
+            else if(t.includes('sabão') || t.includes('máquina') || t.includes('vassoura') || t.includes('rodo')) catSelect.value = 'Lavanderia';
+            else if(t.includes('jogo') || t.includes('viagem') || t.includes('piscina')) catSelect.value = 'Lazer';
+        }
+
+        function renderizarItensCasa() {
+            let container = document.getElementById('casaListContainer');
+            container.innerHTML = '';
+            
+            let itensFiltrados = appData.itensCasa;
+            if(filtroCategoriaAtual !== 'todos') {
+                itensFiltrados = itensFiltrados.filter(i => i.categoria === filtroCategoriaAtual);
+            }
+
+            if(itensFiltrados.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><p>Nenhum item encontrado nesta categoria.</p></div>`;
+                return;
+            }
+
+            itensFiltrados.forEach(item => {
+                let badgeClass = item.prioridade === 'Urgente' ? 'badge-urgent' : item.prioridade === 'Importante' ? 'badge-important' : 'badge-waiting';
+                let statusClass = item.status === 'Comprado' ? 'badge-status-bought' : item.status === 'Planejado' ? 'badge-status-planned' : 'badge-status-pending';
+
+                let card = document.createElement('div');
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div>
+                            <span class="badge ${badgeClass}">${item.prioridade}</span>
+                            <span class="badge ${statusClass}">${item.status}</span>
+                            <div class="list-card-title" style="margin-top: 6px;">${item.nome}</div>
+                        </div>
+                        <div class="action-icon-group">
+                            <button class="icon-btn check" onclick="marcarComprado(${item.id})" title="Marcar como Comprado"><i class="fa-solid fa-circle-check"></i></button>
+                            <button class="icon-btn delete" onclick="excluirItemCasa(${item.id})" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="list-card-details">
+                        <span><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
+                        <span><b>Est:</b> ${formatarMoeda(item.valorEst)} ${item.valorReal > 0 ? '| <b>Real:</b> ' + formatarMoeda(item.valorReal) : ''}</span>
+                    </div>
+                    <div class="activity-log">Adicionado por ${item.criadoPor} em ${formatarData(item.data)}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarItemCasa = function() {
+            let nome = document.getElementById('itemNome').value;
+            let categoria = document.getElementById('itemCategoria').value;
+            let prioridade = document.getElementById('itemPrioridade').value;
+            let status = document.getElementById('itemStatus').value;
+            let valorEst = parseFloat(document.getElementById('itemValorEstimado').value) || 0;
+            let valorReal = parseFloat(document.getElementById('itemValorReal').value) || 0;
+
+            if(!nome) { alert('Digite o nome do item!'); return; }
+
+            let novoItem = {
+                id: Date.now(),
+                nome, categoria, prioridade, status, valorEst, valorReal,
+                criadoPor: appData.usuarioAtual,
+                data: new Date().toISOString().split('T')[0]
+            };
+
+            appData.itensCasa.unshift(novoItem);
+            registrarAtividade(`${appData.usuarioAtual} adicionou: ${nome} — ${formatarMoeda(valorEst || valorReal)}`);
+            
+            salvarDados();
+            closeModal('modalItemCasa');
+            document.getElementById('itemNome').value = '';
+            document.getElementById('itemValorEstimado').value = '';
+            document.getElementById('itemValorReal').value = '';
+        }
+
+        window.marcarComprado = function(id) {
+            let item = appData.itensCasa.find(i => i.id === id);
+            if(item) {
+                item.status = item.status === 'Comprado' ? 'Pendente' : 'Comprado';
+                if(item.status === 'Comprado' && item.valorReal === 0) {
+                    item.valorReal = item.valorEst;
+                }
+                registrarAtividade(`${appData.usuarioAtual} marcou como ${item.status}: ${item.nome}`);
+                salvarDados();
+            }
+        }
+
+        window.excluirItemCasa = function(id) {
+            if(confirm('Tem certeza que deseja excluir este item?')) {
+                appData.itensCasa = appData.itensCasa.filter(i => i.id !== id);
+                salvarDados();
+            }
+        }
+
+        // --- MANIPULAÇÃO DE FINANÇAS E CONTAS ---
+        function renderizarContas() {
+            let container = document.getElementById('financasContasContainer');
+            container.innerHTML = '';
+
+            if(appData.contas.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>Nenhuma conta cadastrada.</p></div>`;
+                return;
+            }
+
+            appData.contas.forEach(c => {
+                let badgeClass = c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending';
+                let card = document.createElement('div');
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div>
+                            <span class="badge ${badgeClass}">${c.status.toUpperCase()}</span>
+                            <div class="list-card-title" style="margin-top: 4px;">${c.nome}</div>
+                        </div>
+                        <div style="font-weight: 700; color: var(--dark);">${formatarMoeda(c.valor)}</div>
+                    </div>
+                    <div class="list-card-details">
+                        <span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span>
+                        <div class="action-icon-group">
+                            <button class="icon-btn check" onclick="alternarConta(${c.id})" title="Pagar/Pendente"><i class="fa-solid fa-check"></i></button>
+                            <button class="icon-btn delete" onclick="excluirConta(${c.id})" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarConta = function() {
+            let nome = document.getElementById('contaNome').value;
+            let categoria = document.getElementById('contaCategoria').value;
+            let valor = parseFloat(document.getElementById('contaValor').value) || 0;
+            let vencimento = document.getElementById('contaVencimento').value;
+            let status = document.getElementById('contaStatus').value;
+
+            if(!nome || !valor) { alert('Preencha o nome e o valor da conta.'); return; }
+
+            appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status });
+            registrarAtividade(`${appData.usuarioAtual} cadastrou conta: ${nome} — ${formatarMoeda(valor)}`);
+            
+            salvarDados();
+            closeModal('modalConta');
+            document.getElementById('contaNome').value = '';
+            document.getElementById('contaValor').value = '';
+        }
+
+        window.alternarConta = function(id) {
+            let c = appData.contas.find(x => x.id === id);
+            if(c) {
+                c.status = c.status === 'paga' ? 'pendente' : 'paga';
+                registrarAtividade(`${appData.usuarioAtual} marcou conta ${c.nome} como ${c.status}`);
+                salvarDados();
+            }
+        }
+
+        window.excluirConta = function(id) {
+            if(confirm('Deseja excluir esta conta?')) {
+                appData.contas = appData.contas.filter(x => x.id !== id);
+                salvarDados();
+            }
+        }
+
+        function renderizarOrcamento() {
+            let container = document.getElementById('financasOrcamentoContainer');
+            container.innerHTML = '';
+
+            let categorias = ['Casa', 'Mercado', 'Contas Fixas', 'Lazer', 'Tecnologia'];
+            
+            categorias.forEach(cat => {
+                let planejado = appData.orcamento[cat] || 0;
+                
+                let gastoItens = appData.itensCasa
+                    .filter(i => i.categoria === cat && i.status === 'Comprado')
+                    .reduce((acc, i) => acc + (parseFloat(i.valorReal) || i.valorEst || 0), 0);
+
+                let gastoContas = appData.contas
+                    .filter(c => c.categoria === cat && c.status === 'paga')
+                    .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+
+                let gastoReal = gastoItens + gastoContas;
+                let restante = planejado - gastoReal;
+                let isEstourado = restante < 0;
+
+                let card = document.createElement('div');
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div class="list-card-title">${isEstourado ? '🔴 ' : '🟢 '} ${cat}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: ${isEstourado ? 'var(--danger)' : 'var(--success)'};">
+                            ${isEstourado ? 'Excedente: ' + formatarMoeda(Math.abs(restante)) : 'Restante: ' + formatarMoeda(restante)}
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between; margin-top: 4px;">
+                        <span>Planejado: ${formatarMoeda(planejado)}</span>
+                        <span>Gasto Real: ${formatarMoeda(gastoReal)}</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${Math.min((gastoReal/(planejado||1))*100, 100)}%; background: ${isEstourado ? 'var(--danger)' : 'var(--success)'};"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarOrcamento = function() {
+            appData.orcamento.Casa = parseFloat(document.getElementById('orcCasa').value) || 0;
+            appData.orcamento.Mercado = parseFloat(document.getElementById('orcMercado').value) || 0;
+            appData.orcamento['Contas Fixas'] = parseFloat(document.getElementById('orcContasFixas').value) || 0;
+            appData.orcamento.Lazer = parseFloat(document.getElementById('orcLazer').value) || 0;
+            appData.orcamento.Tecnologia = parseFloat(document.getElementById('orcTecnologia').value) || 0;
+            appData.orcamento.Investimentos = parseFloat(document.getElementById('orcInvestimentos').value) || 0;
+
+            salvarDados();
+            closeModal('modalOrcamento');
+        }
+
+        window.salvarRenda = function() {
+            appData.renda.p1 = parseFloat(document.getElementById('rendaP1').value) || 0;
+            appData.renda.p2 = parseFloat(document.getElementById('rendaP2').value) || 0;
+            appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0;
+
+            registrarAtividade(`${appData.usuarioAtual} atualizou as rendas do casal.`);
+            salvarDados();
+            closeModal('modalRenda');
+        }
+
+        // --- OBJETIVOS E METAS ---
+        function renderizarObjetivos() {
+            let container = document.getElementById('objetivosContainer');
+            container.innerHTML = '';
+
+            if(appData.objetivos.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>Nenhum objetivo cadastrado.</p></div>`;
+                return;
+            }
+
+            appData.objetivos.forEach(obj => {
+                let progresso = obj.valorDesejado > 0 ? (obj.valorGuardado / obj.valorDesejado) * 100 : 0;
+                let falta = obj.valorDesejado - obj.valorGuardado;
+
+                let card = document.createElement('div');
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div class="list-card-title"><i class="fa-solid fa-bullseye" style="color: var(--secondary);"></i> ${obj.nome}</div>
+                        <button class="icon-btn delete" onclick="excluirObjetivo(${obj.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div style="font-size: 12px; color: var(--gray); display: flex; justify-content: space-between; margin-top: 4px;">
+                        <span>Guardado: <b>${formatarMoeda(obj.valorGuardado)}</b></span>
+                        <span>Meta: <b>${formatarMoeda(obj.valorDesejado)}</b></span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${Math.min(progresso, 100)}%; background: var(--secondary);"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-top: 4px;">
+                        <span style="color: var(--secondary); font-weight: bold;">Progresso: ${progresso.toFixed(0)}%</span>
+                        <span>Falta: ${formatarMoeda(falta > 0 ? falta : 0)}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarObjetivo = function() {
+            let nome = document.getElementById('objNome').value;
+            let valorDesejado = parseFloat(document.getElementById('objValorDesejado').value) || 0;
+            let valorGuardado = parseFloat(document.getElementById('objValorGuardado').value) || 0;
+            let prazo = document.getElementById('objPrazo').value;
+
+            if(!nome || !valorDesejado) { alert('Preencha o nome e o valor desejado.'); return; }
+
+            appData.objetivos.push({ id: Date.now(), nome, valorDesejado, valorGuardado, prazo });
+            registrarAtividade(`${appData.usuarioAtual} criou objetivo: ${nome}`);
+            
+            salvarDados();
+            closeModal('modalObjetivo');
+            document.getElementById('objNome').value = '';
+            document.getElementById('objValorDesejado').value = '';
+            document.getElementById('objValorGuardado').value = '';
+        }
+
+        window.excluirObjetivo = function(id) {
+            if(confirm('Excluir este objetivo?')) {
+                appData.objetivos = appData.objetivos.filter(o => o.id !== id);
+                salvarDados();
+            }
+        }
+
+        // --- SALDO E HISTÓRICO ---
+        window.salvarNovoSaldo = function() {
+            let val = parseFloat(document.getElementById('modalSaldoValor').value);
+            let obs = document.getElementById('modalSaldoObs').value || 'Atualização manual';
+            if(isNaN(val)) { alert('Informe um valor válido.'); return; }
+
+            appData.saldoAtual = val;
+            appData.ultimaAtualizacaoSaldo = new Date().toISOString();
+            
+            appData.historicoSaldo.unshift({
+                data: new Date().toLocaleString('pt-BR'),
+                valor: val,
+                obs: obs
+            });
+
+            registrarAtividade(`${appData.usuarioAtual} atualizou o saldo para ${formatarMoeda(val)}`);
+            salvarDados();
+            closeModal('modalSaldo');
+            document.getElementById('modalSaldoValor').value = '';
+            document.getElementById('modalSaldoObs').value = '';
+        }
+
+        function renderizarHistoricoSaldo() {
+            let container = document.getElementById('historicoSaldoContainer');
+            container.innerHTML = '';
+            appData.historicoSaldo.forEach(h => {
+                let div = document.createElement('div');
+                div.className = 'list-card';
+                div.innerHTML = `
+                    <div class="list-card-header">
+                        <div style="font-size: 13px; font-weight: 700;">${formatarMoeda(h.valor)}</div>
+                        <div style="font-size: 11px; color: var(--gray);">${h.data}</div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--dark);">${h.obs}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function registrarAtividade(texto) {
+            let dataHoje = new Date().toLocaleDateString('pt-BR');
+            appData.atividades.unshift({ texto, data: dataHoje });
+            if(appData.atividades.length > 20) appData.atividades.pop();
+        }
+
+        function renderizarAtividades() {
+            let container = document.getElementById('homeActivityLogContainer');
+            container.innerHTML = '';
+            let ultimas = appData.atividades.slice(0, 5);
+            if(ultimas.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>Nenhuma atividade recente.</p></div>`;
+                return;
+            }
+            ultimas.forEach(a => {
+                let d = document.createElement('div');
+                d.className = 'activity-log';
+                d.style.marginBottom = '6px';
+                d.innerHTML = `<b>${a.data}:</b> ${a.texto}`;
+                container.appendChild(d);
+            });
+        }
+
+        // Utilidades gerais
+        function formatarMoeda(val) {
+            return 'R$ ' + (parseFloat(val) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatarData(dataStr) {
+            if(!dataStr) return '';
+            let p = dataStr.split('-');
+            if(p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
+            return dataStr;
+        }
+
+        window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; }
+        window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
+
+        window.openModalSaldo = function() {
+            document.getElementById('modalSaldoValor').value = appData.saldoAtual;
+            openModal('modalSaldo');
+        }
+        window.openModalItemCasa = function() { openModal('modalItemCasa'); }
+        window.openModalConta = function() { openModal('modalConta'); }
+        window.openModalRenda = function() {
+            document.getElementById('rendaP1').value = appData.renda.p1;
+            document.getElementById('rendaP2').value = appData.renda.p2;
+            document.getElementById('rendaExtra').value = appData.renda.extra;
+            openModal('modalRenda');
+        }
+        window.openModalOrcamento = function() {
+            document.getElementById('orcCasa').value = appData.orcamento.Casa;
+            document.getElementById('orcMercado').value = appData.orcamento.Mercado;
+            document.getElementById('orcContasFixas').value = appData.orcamento['Contas Fixas'];
+            document.getElementById('orcLazer').value = appData.orcamento.Lazer;
+            document.getElementById('orcTecnologia').value = appData.orcamento.Tecnologia;
+            document.getElementById('orcInvestimentos').value = appData.orcamento.Investimentos;
+            openModal('modalOrcamento');
+        }
+        window.openModalObjetivo = function() { openModal('modalObjetivo'); }
+
+        window.exportarDados = function() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            let dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "backup_app_casal.json");
+            dlAnchorElem.click();
+        }
+
+        window.resetarDados = function() {
+            if(confirm('Tem certeza absoluta que deseja limpar todos os dados do aplicativo?')) {
+                localStorage.removeItem('app_casal_data_v1');
+                location.reload();
+            }
+        }
+
+        // PWA Installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('pwaBanner').style.display = 'flex';
+        });
+
+        window.installPWA = function() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('pwaBanner').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('Para instalar, abra o menu do seu navegador (Chrome ou Safari) e selecione "Adicionar à Tela Inicial".');
+            }
+        }
+    </script>
+</body>
+</html>
