@@ -649,7 +649,7 @@
         <!-- ABA 2: CASA (Itens, Compras, Organização) -->
         <section id="tab-casa" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Organização da Casa</h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Planos de <span id="lblPerfilAtivoTitulo">...</span></h2>
                 <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalItemCasa()">
                     <i class="fa-solid fa-plus"></i> Novo Item
                 </button>
@@ -667,7 +667,7 @@
                 <div class="chip" onclick="filterCasa('Lazer')">🎮 Lazer</div>
             </div>
 
-            <!-- Lista de Itens da Casa -->
+            <!-- Lista de Itens da Casa filtrada por Usuário Ativo -->
             <div class="item-list" id="casaListContainer">
                 <!-- Preenchido via JS -->
             </div>
@@ -729,9 +729,9 @@
             </div>
 
             <div class="card">
-                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Sincronização & Parceiro</span></div>
+                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Sincronização & Perfis</span></div>
                 <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
-                    Este aplicativo agora está conectado ao <b>Firebase</b>. Qualquer alteração é sincronizada em tempo real com o outro dispositivo.
+                    Alterne entre os perfis no topo para ver os planejamentos individuais de cada um.
                 </p>
                 <div class="form-group">
                     <label>Seu Nome / Apelido</label>
@@ -1047,6 +1047,7 @@
                 document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
                 document.getElementById('currentUserAvatar').innerText = window.appData.usuarioAtual.charAt(0).toUpperCase();
                 document.getElementById('currentUserName').innerText = window.appData.usuarioAtual;
+                document.getElementById('lblPerfilAtivoTitulo').innerText = window.appData.usuarioAtual;
 
                 window.atualizarInterface();
                 console.log("Dados sincronizados em tempo real do Firebase.");
@@ -1092,6 +1093,7 @@
             document.getElementById('inputNomeParceiro').value = appData.parceiroNome;
             document.getElementById('lblNomeP1').innerText = appData.usuarioAtual;
             document.getElementById('lblNomeP2').innerText = appData.parceiroNome;
+            document.getElementById('lblPerfilAtivoTitulo').innerText = appData.usuarioAtual;
             
             salvarDados();
         }
@@ -1102,6 +1104,7 @@
             document.getElementById('currentUserAvatar').innerText = nome.charAt(0).toUpperCase();
             document.getElementById('currentUserName').innerText = nome;
             document.getElementById('lblNomeP1').innerText = nome;
+            document.getElementById('lblPerfilAtivoTitulo').innerText = nome;
             salvarDados();
         }
 
@@ -1175,7 +1178,7 @@
             renderizarAtividades();
         }
 
-        // --- MANIPULAÇÃO DE ITENS DA CASA ---
+        // --- MANIPULAÇÃO DE ITENS DA CASA (FILTRADO POR PERFIL) ---
         let filtroCategoriaAtual = 'todos';
 
         window.filterCasa = function(cat) {
@@ -1201,13 +1204,15 @@
             let container = document.getElementById('casaListContainer');
             container.innerHTML = '';
             
-            let itensFiltrados = appData.itensCasa;
+            // Filtra por categoria e TAMBÉM pelo usuário ativo no momento
+            let itensFiltrados = appData.itensCasa.filter(i => i.criadoPor === appData.usuarioAtual);
+
             if(filtroCategoriaAtual !== 'todos') {
                 itensFiltrados = itensFiltrados.filter(i => i.categoria === filtroCategoriaAtual);
             }
 
             if(itensFiltrados.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><p>Nenhum item encontrado nesta categoria.</p></div>`;
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><p>Nenhum plano cadastrado por ${appData.usuarioAtual} nesta categoria.</p></div>`;
                 return;
             }
 
@@ -1233,7 +1238,7 @@
                         <span><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
                         <span><b>Est:</b> ${formatarMoeda(item.valorEst)} ${item.valorReal > 0 ? '| <b>Real:</b> ' + formatarMoeda(item.valorReal) : ''}</span>
                     </div>
-                    <div class="activity-log">Adicionado por ${item.criadoPor} em ${formatarData(item.data)}</div>
+                    <div class="activity-log">Planejado por ${item.criadoPor} em ${formatarData(item.data)}</div>
                 `;
                 container.appendChild(card);
             });
@@ -1252,7 +1257,7 @@
             let novoItem = {
                 id: Date.now(),
                 nome, categoria, prioridade, status, valorEst, valorReal,
-                criadoPor: appData.usuarioAtual,
+                criadoPor: appData.usuarioAtual, // Salva atrelado ao usuário que está logado agora
                 data: new Date().toISOString().split('T')[0]
             };
 
