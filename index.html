@@ -1046,16 +1046,16 @@
         function carregarDadosFirebase() {
             onSnapshot(doc(db, "dados", "app_casal"), (docSnapshot) => {
                 if (docSnapshot.exists()) {
+                    // Mescla os dados da nuvem com os locais para garantir que nada se perde
                     window.appData = docSnapshot.data();
                     window.atualizarInterface();
                     console.log("Dados sincronizados em tempo real do Firebase.");
                 } else {
-                    // Se não existir, cria o primeiro registro na nuvem com os dados padrão
+                    // Se o documento ainda não existir na nuvem, grava o estado atual
                     window.salvarDados();
                 }
             }, (error) => {
                 console.error("Erro ao escutar dados do Firebase:", error);
-                // Fallback para localStorage caso haja falha de rede
                 const saved = localStorage.getItem('app_casal_data_v1');
                 if (saved) {
                     try { window.appData = JSON.parse(saved); } catch(e) {}
@@ -1063,7 +1063,6 @@
                 window.atualizarInterface();
             });
         }
-
         // Inicialização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             carregarDadosFirebase();
