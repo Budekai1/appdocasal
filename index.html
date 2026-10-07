@@ -371,7 +371,7 @@
         .badge-status-bought { background: var(--success-light); color: var(--success); }
         .badge-status-canceled { background: var(--gray-light); color: var(--gray); }
 
-        /* List Items (Casa & Finanças & Objetivos) */
+        /* List Items */
         .item-list {
             display: flex;
             flex-direction: column;
@@ -480,7 +480,7 @@
             transition: width 0.5s ease;
         }
 
-        /* Log de Atividades (Quem Fez O Quê) */
+        /* Log de Atividades */
         .activity-log {
             font-size: 11px;
             color: var(--gray);
@@ -649,7 +649,7 @@
         <!-- ABA 2: CASA (Itens, Compras, Organização) -->
         <section id="tab-casa" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Planos de <span id="lblPerfilAtivoTitulo">...</span></h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Planos de <span id="lblPerfilAtivoTituloCasa">...</span></h2>
                 <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalItemCasa()">
                     <i class="fa-solid fa-plus"></i> Novo Item
                 </button>
@@ -708,7 +708,7 @@
         <!-- ABA 4: OBJETIVOS & INVESTIMENTOS -->
         <section id="tab-objetivos" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas & Melhorias</h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas de <span id="lblPerfilAtivoTituloObj">...</span></h2>
                 <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalObjetivo()">
                     <i class="fa-solid fa-plus"></i> Novo Objetivo
                 </button>
@@ -1047,7 +1047,8 @@
                 document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
                 document.getElementById('currentUserAvatar').innerText = window.appData.usuarioAtual.charAt(0).toUpperCase();
                 document.getElementById('currentUserName').innerText = window.appData.usuarioAtual;
-                document.getElementById('lblPerfilAtivoTitulo').innerText = window.appData.usuarioAtual;
+                document.getElementById('lblPerfilAtivoTituloCasa').innerText = window.appData.usuarioAtual;
+                document.getElementById('lblPerfilAtivoTituloObj').innerText = window.appData.usuarioAtual;
 
                 window.atualizarInterface();
                 console.log("Dados sincronizados em tempo real do Firebase.");
@@ -1093,7 +1094,8 @@
             document.getElementById('inputNomeParceiro').value = appData.parceiroNome;
             document.getElementById('lblNomeP1').innerText = appData.usuarioAtual;
             document.getElementById('lblNomeP2').innerText = appData.parceiroNome;
-            document.getElementById('lblPerfilAtivoTitulo').innerText = appData.usuarioAtual;
+            document.getElementById('lblPerfilAtivoTituloCasa').innerText = appData.usuarioAtual;
+            document.getElementById('lblPerfilAtivoTituloObj').innerText = appData.usuarioAtual;
             
             salvarDados();
         }
@@ -1104,7 +1106,8 @@
             document.getElementById('currentUserAvatar').innerText = nome.charAt(0).toUpperCase();
             document.getElementById('currentUserName').innerText = nome;
             document.getElementById('lblNomeP1').innerText = nome;
-            document.getElementById('lblPerfilAtivoTitulo').innerText = nome;
+            document.getElementById('lblPerfilAtivoTituloCasa').innerText = nome;
+            document.getElementById('lblPerfilAtivoTituloObj').innerText = nome;
             salvarDados();
         }
 
@@ -1204,8 +1207,8 @@
             let container = document.getElementById('casaListContainer');
             container.innerHTML = '';
             
-            // Filtra por categoria e TAMBÉM pelo usuário ativo no momento
-            let itensFiltrados = appData.itensCasa.filter(i => i.criadoPor === appData.usuarioAtual);
+            // Se o item não tiver 'criadoPor' definido (dados antigos), assume o usuário atual para não sumir
+            let itensFiltrados = appData.itensCasa.filter(i => (i.criadoPor || appData.usuarioAtual) === appData.usuarioAtual);
 
             if(filtroCategoriaAtual !== 'todos') {
                 itensFiltrados = itensFiltrados.filter(i => i.categoria === filtroCategoriaAtual);
@@ -1238,7 +1241,7 @@
                         <span><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
                         <span><b>Est:</b> ${formatarMoeda(item.valorEst)} ${item.valorReal > 0 ? '| <b>Real:</b> ' + formatarMoeda(item.valorReal) : ''}</span>
                     </div>
-                    <div class="activity-log">Planejado por ${item.criadoPor} em ${formatarData(item.data)}</div>
+                    <div class="activity-log">Planejado por ${item.criadoPor || appData.usuarioAtual} em ${formatarData(item.data)}</div>
                 `;
                 container.appendChild(card);
             });
@@ -1257,7 +1260,7 @@
             let novoItem = {
                 id: Date.now(),
                 nome, categoria, prioridade, status, valorEst, valorReal,
-                criadoPor: appData.usuarioAtual, // Salva atrelado ao usuário que está logado agora
+                criadoPor: appData.usuarioAtual, // Vincula ao perfil ativo
                 data: new Date().toISOString().split('T')[0]
             };
 
@@ -1422,17 +1425,20 @@
             closeModal('modalRenda');
         }
 
-        // --- OBJETIVOS E METAS ---
+        // --- OBJETIVOS E METAS (FILTRADO POR PERFIL) ---
         function renderizarObjetivos() {
             let container = document.getElementById('objetivosContainer');
             container.innerHTML = '';
 
-            if(appData.objetivos.length === 0) {
-                container.innerHTML = `<div class="empty-state"><p>Nenhum objetivo cadastrado.</p></div>`;
+            // Filtra os objetivos para mostrar apenas os criados pelo usuário atual
+            let objetivosFiltrados = appData.objetivos.filter(o => (o.criadoPor || appData.usuarioAtual) === appData.usuarioAtual);
+
+            if(objetivosFiltrados.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>Nenhum objetivo cadastrado por ${appData.usuarioAtual}.</p></div>`;
                 return;
             }
 
-            appData.objetivos.forEach(obj => {
+            objetivosFiltrados.forEach(obj => {
                 let progresso = obj.valorDesejado > 0 ? (obj.valorGuardado / obj.valorDesejado) * 100 : 0;
                 let falta = obj.valorDesejado - obj.valorGuardado;
 
@@ -1467,7 +1473,14 @@
 
             if(!nome || !valorDesejado) { alert('Preencha o nome e o valor desejado.'); return; }
 
-            appData.objetivos.push({ id: Date.now(), nome, valorDesejado, valorGuardado, prazo });
+            appData.objetivos.push({ 
+                id: Date.now(), 
+                nome, 
+                valorDesejado, 
+                valorGuardado, 
+                prazo, 
+                criadoPor: appData.usuarioAtual // Vincula ao perfil ativo
+            });
             registrarAtividade(`${appData.usuarioAtual} criou objetivo: ${nome}`);
             
             salvarDados();
