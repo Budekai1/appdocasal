@@ -992,43 +992,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Estado Global da Aplicação
+        // Estado Global da Aplicação com valores padrão limpos
         window.appData = {
-            usuarioAtual: 'João',
-            parceiroNome: 'Maria',
-            saldoAtual: 2850.00,
-            ultimaAtualizacaoSaldo: '2026-08-12T10:00:00',
-            renda: { p1: 4500.00, p2: 3800.00, extra: 500.00 },
+            usuarioAtual: '',
+            parceiroNome: '',
+            saldoAtual: 0.00,
+            ultimaAtualizacaoSaldo: new Date().toISOString(),
+            renda: { p1: 0.00, p2: 0.00, extra: 0.00 },
             orcamento: {
-                Casa: 1000.00,
-                Mercado: 800.00,
-                'Contas Fixas': 1200.00,
-                Lazer: 300.00,
-                Tecnologia: 200.00,
-                Investimentos: 500.00
+                Casa: 0.00,
+                Mercado: 0.00,
+                'Contas Fixas': 0.00,
+                Lazer: 0.00,
+                Tecnologia: 0.00,
+                Investimentos: 0.00
             },
-            itensCasa: [
-                { id: 1, nome: 'Comprar frigideira', categoria: 'Cozinha', prioridade: 'Urgente', status: 'Pendente', valorEst: 120, valorReal: 0, criadoPor: 'João', data: '2026-08-18' },
-                { id: 2, nome: 'Comprar lençol', categoria: 'Quarto', prioridade: 'Importante', status: 'Comprado', valorEst: 150, valorReal: 140, criadoPor: 'Maria', data: '2026-08-14' },
-                { id: 3, nome: 'Trocar torneira', categoria: 'Banheiro', prioridade: 'Urgente', status: 'Pendente', valorEst: 90, valorReal: 0, criadoPor: 'João', data: '2026-08-19' }
-            ],
-            contas: [
-                { id: 1, nome: 'Aluguel', categoria: 'Casa', valor: 1400, vencimento: '2026-08-10', status: 'paga' },
-                { id: 2, nome: 'Energia', categoria: 'Contas Fixas', valor: 145, vencimento: '2026-08-15', status: 'paga' },
-                { id: 3, nome: 'Internet', categoria: 'Contas Fixas', valor: 100, vencimento: '2026-08-25', status: 'pendente' }
-            ],
-            objetivos: [
-                { id: 1, nome: 'Comprar sofá', valorDesejado: 3000, valorGuardado: 1200, prazo: '2026-12-20' },
-                { id: 2, nome: 'Reformar cozinha', valorDesejado: 5000, valorGuardado: 2500, prazo: '2026-11-30' }
-            ],
-            historicoSaldo: [
-                { data: '2026-08-12 10:00', valor: 2850.00, obs: 'Atualização quinzenal' },
-                { data: '2026-08-01 09:00', valor: 2100.00, obs: 'Virada de mês' }
-            ],
-            atividades: [
-                { texto: 'Maria marcou: Aluguel — R$ 1.400 — paga', data: '12/08/2026' },
-                { texto: 'João adicionou: Comprar frigideira — R$ 120', data: '18/08/2026' }
-            ]
+            itensCasa: [],
+            contas: [],
+            objetivos: [],
+            historicoSaldo: [],
+            atividades: []
         };
 
         // Funções Globais de Sincronização e Salvamento
@@ -1045,24 +1028,33 @@
 
         function carregarDadosFirebase() {
             onSnapshot(doc(db, "dados", "app_casal"), (docSnapshot) => {
-                if (docSnapshot.exists()) {
+                if (docSnapshot.exists() && docSnapshot.data().usuarioAtual) {
                     window.appData = docSnapshot.data();
-                    
-                    // Atualiza os inputs da tela de Ajustes com os dados reais salvos no Firebase
-                    if(document.getElementById('inputNomeUsuario')) {
-                        document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual || 'João';
-                        document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome || 'Maria';
-                        document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual || 'João';
-                        document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome || 'Maria';
-                        document.getElementById('currentUserAvatar').innerText = (window.appData.usuarioAtual || 'João').charAt(0).toUpperCase();
-                        document.getElementById('currentUserName').innerText = window.appData.usuarioAtual || 'João';
-                    }
-
-                    window.atualizarInterface();
-                    console.log("Dados sincronizados em tempo real do Firebase.");
                 } else {
-                    window.salvarDados();
+                    // Se a nuvem estiver vazia, tenta buscar do localStorage antes de criar dados padrão
+                    const saved = localStorage.getItem('app_casal_data_v1');
+                    if (saved) {
+                        try { 
+                            window.appData = JSON.parse(saved); 
+                        } catch(e) {}
+                    } else {
+                        // Se realmente não existir nada em canto nenhum, define os nomes iniciais personalizados pela primeira vez
+                        window.appData.usuarioAtual = 'Parceiro 1';
+                        window.appData.parceiroNome = 'Parceiro 2';
+                    }
+                    window.salvarDados(); // Salva o estado atualizado na nuvem
                 }
+
+                // Atualiza os inputs da tela com o que foi efetivamente carregado
+                document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual;
+                document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome;
+                document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual;
+                document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
+                document.getElementById('currentUserAvatar').innerText = window.appData.usuarioAtual.charAt(0).toUpperCase();
+                document.getElementById('currentUserName').innerText = window.appData.usuarioAtual;
+
+                window.atualizarInterface();
+                console.log("Dados sincronizados em tempo real do Firebase.");
             }, (error) => {
                 console.error("Erro ao escutar dados do Firebase:", error);
                 const saved = localStorage.getItem('app_casal_data_v1');
