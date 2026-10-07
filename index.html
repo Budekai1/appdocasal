@@ -1046,12 +1046,21 @@
         function carregarDadosFirebase() {
             onSnapshot(doc(db, "dados", "app_casal"), (docSnapshot) => {
                 if (docSnapshot.exists()) {
-                    // Mescla os dados da nuvem com os locais para garantir que nada se perde
                     window.appData = docSnapshot.data();
+                    
+                    // Atualiza os inputs da tela de Ajustes com os dados reais salvos no Firebase
+                    if(document.getElementById('inputNomeUsuario')) {
+                        document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual || 'João';
+                        document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome || 'Maria';
+                        document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual || 'João';
+                        document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome || 'Maria';
+                        document.getElementById('currentUserAvatar').innerText = (window.appData.usuarioAtual || 'João').charAt(0).toUpperCase();
+                        document.getElementById('currentUserName').innerText = window.appData.usuarioAtual || 'João';
+                    }
+
                     window.atualizarInterface();
                     console.log("Dados sincronizados em tempo real do Firebase.");
                 } else {
-                    // Se o documento ainda não existir na nuvem, grava o estado atual
                     window.salvarDados();
                 }
             }, (error) => {
@@ -1063,13 +1072,10 @@
                 window.atualizarInterface();
             });
         }
+
         // Inicialização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             carregarDadosFirebase();
-            document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual;
-            document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome;
-            document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual;
-            document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
             
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 document.getElementById('pwaBanner').style.display = 'none';
