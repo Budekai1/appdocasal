@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Estilos CSS Embutidos para Versão Completa e Pronta para Uso -->
+    <!-- Estilos CSS Embutidos com Suporte a Dark Mode -->
     <style>
         :root {
             --primary: #FF6584;
@@ -38,9 +38,24 @@
             --gray: #95A5A6;
             --gray-light: #ECF0F1;
             --border: #E2E8F0;
+            --bg-body: #F4F7F6;
+            --bg-card: #FFFFFF;
+            --text-color: #2C3E50;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             --radius: 16px;
             --transition: all 0.3s ease;
+        }
+
+        /* Dark Mode Palette */
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-card: #1E1E1E;
+            --text-color: #E0E0E0;
+            --gray: #A0A0A0;
+            --gray-light: #2A2A2A;
+            --border: #333333;
+            --light: #252525;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -52,18 +67,19 @@
         }
 
         body {
-            background-color: #F4F7F6;
-            color: var(--dark);
+            background-color: var(--bg-body);
+            color: var(--text-color);
             padding-bottom: 90px;
             max-width: 480px;
             margin: 0 auto;
             position: relative;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Top Bar */
         header {
-            background: #FFFFFF;
+            background: var(--bg-card);
             padding: 16px 20px;
             display: flex;
             justify-content: space-between;
@@ -72,6 +88,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .app-brand {
@@ -91,7 +108,7 @@
         .app-brand h1 {
             font-size: 18px;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--text-color);
         }
 
         .app-brand span {
@@ -100,27 +117,10 @@
             display: block;
         }
 
-        .user-avatar-group {
+        .header-actions {
             display: flex;
+            gap: 8px;
             align-items: center;
-            gap: 6px;
-            background: var(--light);
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
-
-        .user-avatar-group img, .avatar-placeholder {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--secondary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
         }
 
         /* Container Principal & Abas */
@@ -150,13 +150,14 @@
             right: 0;
             max-width: 480px;
             margin: 0 auto;
-            background: #FFFFFF;
+            background: var(--bg-card);
             display: flex;
             justify-content: space-around;
             padding: 10px 4px;
             border-top: 1px solid var(--border);
             z-index: 1000;
             box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .nav-item {
@@ -190,18 +191,19 @@
 
         /* Cards & UI Components */
         .card {
-            background: #FFFFFF;
+            background: var(--bg-card);
             border-radius: var(--radius);
             padding: 18px;
             margin-bottom: 16px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .card-title {
             font-size: 15px;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--text-color);
             margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
@@ -261,11 +263,12 @@
         }
 
         .metric-card {
-            background: white;
+            background: var(--bg-card);
             padding: 14px;
             border-radius: 12px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .metric-card .m-title {
@@ -278,7 +281,7 @@
         .metric-card .m-value {
             font-size: 16px;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--text-color);
             margin-top: 4px;
         }
 
@@ -295,7 +298,7 @@
             display: block;
             font-size: 12px;
             font-weight: 600;
-            color: var(--dark);
+            color: var(--text-color);
             margin-bottom: 6px;
         }
 
@@ -306,14 +309,14 @@
             border-radius: 10px;
             font-size: 14px;
             background: var(--light);
-            color: var(--dark);
+            color: var(--text-color);
             outline: none;
             transition: var(--transition);
         }
 
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
-            background: white;
+            background: var(--bg-card);
             box-shadow: 0 0 0 3px rgba(255, 101, 132, 0.15);
         }
 
@@ -379,7 +382,7 @@
         }
 
         .list-card {
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 12px 14px;
@@ -387,7 +390,8 @@
             flex-direction: column;
             gap: 8px;
             position: relative;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            box-shadow: var(--shadow);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         .list-card-header {
@@ -399,7 +403,7 @@
         .list-card-title {
             font-size: 14px;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--text-color);
         }
 
         .list-card-details {
@@ -446,14 +450,14 @@
         }
 
         .chip {
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
             white-space: nowrap;
             cursor: pointer;
-            color: var(--dark);
+            color: var(--text-color);
             font-weight: 500;
         }
 
@@ -504,7 +508,8 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--bg-card);
+            color: var(--text-color);
             border-radius: var(--radius);
             width: 100%;
             max-width: 420px;
@@ -570,10 +575,11 @@
                 <span>Organização & Finanças</span>
             </div>
         </div>
-        <div class="user-avatar-group">
-            <div class="avatar-placeholder" id="currentUserAvatar" title="Usuário Atual">...</div>
-            <span id="currentUserName" style="font-size: 12px; font-weight: 600;">...</span>
-            <button onclick="toggleUser()" class="icon-btn" style="margin-left: 4px;" title="Trocar de Parceiro"><i class="fa-solid fa-rotate"></i></button>
+        <div class="header-actions">
+            <!-- Botão Dark Mode -->
+            <button onclick="toggleDarkMode()" class="icon-btn" id="darkModeBtn" title="Alternar Modo Escuro" style="font-size: 18px; padding: 8px; background: var(--light); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </div>
     </header>
 
@@ -584,7 +590,7 @@
         <section id="tab-home" class="tab-content active">
             <!-- PWA Instalação / Alerta útil -->
             <div class="pwa-banner" id="pwaBanner">
-                <span><i class="fa-solid fa-mobile-screen"></i> Adicione à tela inicial para acesso rápido!</span>
+                <span><i class="fa-solid fa-mobile-screen"></i> Adicione ao ecrã inicial para acesso rápido!</span>
                 <button class="btn" style="width: auto; padding: 6px 12px; font-size: 11px;" onclick="installPWA()">Instalar</button>
             </div>
 
@@ -608,7 +614,7 @@
             <!-- Métricas Principais -->
             <div class="metrics-grid">
                 <div class="metric-card">
-                    <div class="m-title">Renda Total</div>
+                    <div class="m-title">Renda Total do Mês</div>
                     <div class="m-value" id="lblRendaTotal">R$ 0,00</div>
                 </div>
                 <div class="metric-card danger">
@@ -631,7 +637,7 @@
                     <span><i class="fa-solid fa-chart-pie"></i> Saúde Financeira do Mês</span>
                     <span id="lblStatusOrcamentoBadge" class="badge badge-waiting">Dentro do Orçamento</span>
                 </div>
-                <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;" id="lblResumoOrcamentoTexto">Tudo sob controle por aqui!</div>
+                <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;" id="lblResumoOrcamentoTexto">Tudo sob controlo por aqui!</div>
                 <div class="progress-container">
                     <div class="progress-bar" id="barSaudeFinanceira" style="width: 0%;"></div>
                 </div>
@@ -646,10 +652,10 @@
             </div>
         </section>
 
-        <!-- ABA 2: CASA (Itens, Compras, Organização) -->
+        <!-- ABA 2: CASA (Itens, Compras, Organização Partilhada) -->
         <section id="tab-casa" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Planos de <span id="lblPerfilAtivoTituloCasa">...</span></h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Organização da Casa</h2>
                 <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalItemCasa()">
                     <i class="fa-solid fa-plus"></i> Novo Item
                 </button>
@@ -667,23 +673,23 @@
                 <div class="chip" onclick="filterCasa('Lazer')">🎮 Lazer</div>
             </div>
 
-            <!-- Lista de Itens da Casa filtrada por Usuário Ativo -->
+            <!-- Lista de Itens da Casa Partilhada -->
             <div class="item-list" id="casaListContainer">
                 <!-- Preenchido via JS -->
             </div>
         </section>
 
-        <!-- ABA 3: FINANÇAS (Renda, Contas, Planejamento) -->
+        <!-- ABA 3: FINANÇAS (Renda Quinzenal, Contas, Planejamento) -->
         <section id="tab-financas" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-wallet"></i> Controle Financeiro</h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-wallet"></i> Controlo Financeiro</h2>
                 <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 11px;" onclick="openModalRenda()">Renda</button>
+                    <button class="btn btn-outline" style="width: auto; padding: 6px 10px; font-size: 11px;" onclick="openModalRenda()">Rendas</button>
                     <button class="btn" style="width: auto; padding: 6px 10px; font-size: 11px;" onclick="openModalConta()">Nova Conta</button>
                 </div>
             </div>
 
-            <!-- Seção de Contas -->
+            <!-- Seção de Contas com Notificação de Vencimento -->
             <div class="card">
                 <div class="card-title">
                     <span><i class="fa-solid fa-file-invoice-dollar"></i> Contas & Despesas Fixas</span>
@@ -696,7 +702,7 @@
             <!-- Seção Planejamento por Categoria x Gasto Real -->
             <div class="card">
                 <div class="card-title">
-                    <span><i class="fa-solid fa-scale-balanced"></i> Orçamento Planejado x Real</span>
+                    <span><i class="fa-solid fa-scale-balanced"></i> Orçamento Planeado x Real</span>
                     <button class="icon-btn" onclick="openModalOrcamento()"><i class="fa-solid fa-gear"></i></button>
                 </div>
                 <div class="item-list" id="financasOrcamentoContainer">
@@ -705,12 +711,12 @@
             </div>
         </section>
 
-        <!-- ABA 4: OBJETIVOS & INVESTIMENTOS -->
+        <!-- ABA 4: OBJETIVOS & METAS DO CASAL -->
         <section id="tab-objetivos" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas de <span id="lblPerfilAtivoTituloObj">...</span></h2>
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas do Casal</h2>
                 <button class="btn" style="width: auto; padding: 8px 14px; font-size: 12px;" onclick="openModalObjetivo()">
-                    <i class="fa-solid fa-plus"></i> Novo Objetivo
+                    <i class="fa-solid fa-plus"></i> Nova Meta
                 </button>
             </div>
 
@@ -729,17 +735,17 @@
             </div>
 
             <div class="card">
-                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Sincronização & Perfis</span></div>
+                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Configuração dos Nomes</span></div>
                 <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
-                    Alterne entre os perfis no topo para ver os planejamentos individuais de cada um.
+                    Personalize os nomes que aparecem nos lançamentos de renda e nos registos.
                 </p>
                 <div class="form-group">
-                    <label>Seu Nome / Apelido</label>
-                    <input type="text" id="inputNomeUsuario" value="" onchange="atualizarNomeUsuario(this.value)">
+                    <label>Nome do Parceiro 1</label>
+                    <input type="text" id="inputNomeP1" value="Jhonatan" onchange="atualizarNomeP1(this.value)">
                 </div>
                 <div class="form-group">
-                    <label>Nome do Parceiro(a)</label>
-                    <input type="text" id="inputNomeParceiro" value="" onchange="atualizarNomeParceiro(this.value)">
+                    <label>Nome do Parceiro 2</label>
+                    <input type="text" id="inputNomeP2" value="Thayna" onchange="atualizarNomeP2(this.value)">
                 </div>
                 <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Exportar Dados (Backup)</button>
                 <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Dados do App</button>
@@ -787,7 +793,7 @@
             </div>
             <div class="form-group">
                 <label>Observação (Opcional)</label>
-                <input type="text" id="modalSaldoObs" placeholder="Ex: Entrada do salário, pagamento extra...">
+                <input type="text" id="modalSaldoObs" placeholder="Ex: Saldo após acertar contas do dia...">
             </div>
             <button class="btn" onclick="salvarNovoSaldo()">Salvar Saldo</button>
         </div>
@@ -806,7 +812,7 @@
                 <input type="text" id="itemNome" placeholder="Ex: Comprar frigideira nova" oninput="autoCategorizar(this.value)">
             </div>
             <div class="form-group">
-                <label>Categoria (Identificada por IA)</label>
+                <label>Categoria</label>
                 <select id="itemCategoria">
                     <option value="Cozinha">🍳 Cozinha</option>
                     <option value="Quarto">🛏️ Quarto</option>
@@ -888,25 +894,39 @@
         </div>
     </div>
 
-    <!-- Modal: Cadastrar Renda -->
+    <!-- Modal: Cadastrar Renda Quinzenal (Dia 05 e Dia 20) -->
     <div class="modal-overlay" id="modalRenda">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Cadastrar Renda do Casal</div>
+                <div class="modal-title">Registo de Rendas (Dia 05 & Dia 20)</div>
                 <button class="icon-btn" onclick="closeModal('modalRenda')"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            
+            <h3 style="font-size: 13px; color: var(--primary); margin-bottom: 8px;"><i class="fa-solid fa-calendar-day"></i> Recebimentos do Dia 05</h3>
             <div class="form-group">
-                <label>Salário / Renda Parceiro 1 (<span id="lblNomeP1">Parceiro 1</span>)</label>
-                <input type="number" id="rendaP1" step="0.01" placeholder="0.00">
+                <label>Renda de <span id="lblRendaP1_05">Jhonatan</span> (Dia 05)</label>
+                <input type="number" id="rendaP1_05" step="0.01" placeholder="0.00">
             </div>
-            <div class="form-group">
-                <label>Salário / Renda Parceiro 2 (<span id="lblNomeP2">Parceiro 2</span>)</label>
-                <input type="number" id="rendaP2" step="0.01" placeholder="0.00">
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Renda de <span id="lblRendaP2_05">Thayna</span> (Dia 05)</label>
+                <input type="number" id="rendaP2_05" step="0.01" placeholder="0.00">
             </div>
+
+            <h3 style="font-size: 13px; color: var(--primary); margin-bottom: 8px;"><i class="fa-solid fa-calendar-day"></i> Recebimentos do Dia 20</h3>
             <div class="form-group">
-                <label>Rendas Extras do Mês</label>
+                <label>Renda de <span id="lblRendaP1_20">Jhonatan</span> (Dia 20)</label>
+                <input type="number" id="rendaP1_20" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Renda de <span id="lblRendaP2_20">Thayna</span> (Dia 20)</label>
+                <input type="number" id="rendaP2_20" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>Outras Rendas Extras do Mês</label>
                 <input type="number" id="rendaExtra" step="0.01" placeholder="0.00">
             </div>
+
             <button class="btn" onclick="salvarRenda()">Atualizar Rendas</button>
         </div>
     </div>
@@ -915,7 +935,7 @@
     <div class="modal-overlay" id="modalOrcamento">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Planejamento de Gastos Mensais</div>
+                <div class="modal-title">Planeamento de Gastos Mensais</div>
                 <button class="icon-btn" onclick="closeModal('modalOrcamento')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="form-group">
@@ -939,23 +959,23 @@
                 <input type="number" id="orcTecnologia" step="1.00">
             </div>
             <div class="form-group">
-                <label>Planejado para Investimentos/Melhorias (R$)</label>
+                <label>Planeado para Investimentos/Melhorias (R$)</label>
                 <input type="number" id="orcInvestimentos" step="1.00">
             </div>
-            <button class="btn" onclick="salvarOrcamento()">Salvar Planejamento</button>
+            <button class="btn" onclick="salvarOrcamento()">Salvar Planeamento</button>
         </div>
     </div>
 
-    <!-- Modal: Novo Objetivo / Meta -->
+    <!-- Modal: Nova Meta do Casal -->
     <div class="modal-overlay" id="modalObjetivo">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Novo Objetivo / Meta da Casa</div>
+                <div class="modal-title">Nova Meta do Casal</div>
                 <button class="icon-btn" onclick="closeModal('modalObjetivo')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <input type="hidden" id="editObjetivoId">
             <div class="form-group">
-                <label>Nome do Objetivo</label>
+                <label>Nome da Meta / Objetivo</label>
                 <input type="text" id="objNome" placeholder="Ex: Comprar Sofá Novo">
             </div>
             <div class="form-group">
@@ -970,14 +990,14 @@
                 <label>Prazo Estimado</label>
                 <input type="date" id="objPrazo">
             </div>
-            <button class="btn" onclick="salvarObjetivo()">Salvar Objetivo</button>
+            <button class="btn" onclick="salvarObjetivo()">Salvar Meta</button>
         </div>
     </div>
 
     <!-- FIREBASE E LÓGICA DO APLICATIVO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDu2E1Wxa7AGUhmpGkJ_OxnGGyEWnHHyqs",
@@ -992,13 +1012,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Estado Global da Aplicação com valores padrão limpos
+        // Estado Global Unificado com Rendas Quinzenais
         window.appData = {
-            usuarioAtual: 'Parceiro 1',
-            parceiroNome: 'Parceiro 2',
+            nomeP1: 'Jhonatan',
+            nomeP2: 'Thayna',
+            darkMode: false,
             saldoAtual: 0.00,
             ultimaAtualizacaoSaldo: new Date().toISOString(),
-            renda: { p1: 0.00, p2: 0.00, extra: 0.00 },
+            renda: { 
+                p1_05: 0.00, p2_05: 0.00, 
+                p1_20: 0.00, p2_20: 0.00, 
+                extra: 0.00 
+            },
             orcamento: {
                 Casa: 0.00,
                 Mercado: 0.00,
@@ -1014,7 +1039,6 @@
             atividades: []
         };
 
-        // Funções Globais de Sincronização e Salvamento
         window.salvarDados = async function() {
             try {
                 await setDoc(doc(db, "dados", "app_casal"), window.appData);
@@ -1028,30 +1052,36 @@
 
         function carregarDadosFirebase() {
             onSnapshot(doc(db, "dados", "app_casal"), (docSnapshot) => {
-                if (docSnapshot.exists() && docSnapshot.data().usuarioAtual) {
+                if (docSnapshot.exists() && docSnapshot.data().nomeP1) {
                     window.appData = docSnapshot.data();
                 } else {
                     const saved = localStorage.getItem('app_casal_data_v1');
                     if (saved) {
-                        try { 
-                            window.appData = JSON.parse(saved); 
-                        } catch(e) {}
+                        try { window.appData = JSON.parse(saved); } catch(e) {}
                     }
                     window.salvarDados(); 
                 }
 
-                // Atualiza os inputs e labels da tela imediatamente com os dados corretos
-                document.getElementById('inputNomeUsuario').value = window.appData.usuarioAtual;
-                document.getElementById('inputNomeParceiro').value = window.appData.parceiroNome;
-                document.getElementById('lblNomeP1').innerText = window.appData.usuarioAtual;
-                document.getElementById('lblNomeP2').innerText = window.appData.parceiroNome;
-                document.getElementById('currentUserAvatar').innerText = window.appData.usuarioAtual.charAt(0).toUpperCase();
-                document.getElementById('currentUserName').innerText = window.appData.usuarioAtual;
-                document.getElementById('lblPerfilAtivoTituloCasa').innerText = window.appData.usuarioAtual;
-                document.getElementById('lblPerfilAtivoTituloObj').innerText = window.appData.usuarioAtual;
+                // Sincronizar inputs de configuração
+                if(document.getElementById('inputNomeP1')) {
+                    document.getElementById('inputNomeP1').value = window.appData.nomeP1;
+                    document.getElementById('inputNomeP2').value = window.appData.nomeP2;
+                    document.getElementById('lblRendaP1_05').innerText = window.appData.nomeP1;
+                    document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1;
+                    document.getElementById('lblRendaP2_05').innerText = window.appData.nomeP2;
+                    document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2;
+                }
+
+                // Aplicar Dark Mode se ativo
+                if (window.appData.darkMode) {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('darkModeBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    document.getElementById('darkModeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+                }
 
                 window.atualizarInterface();
-                console.log("Dados sincronizados em tempo real do Firebase.");
             }, (error) => {
                 console.error("Erro ao escutar dados do Firebase:", error);
                 const saved = localStorage.getItem('app_casal_data_v1');
@@ -1062,17 +1092,15 @@
             });
         }
 
-        // Inicialização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             carregarDadosFirebase();
-            
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 document.getElementById('pwaBanner').style.display = 'none';
             }
         });
     </script>
 
-    <!-- LÓGICA DA INTERFACE E FUNÇÕES DE MANIPULAÇÃO -->
+    <!-- LÓGICA DA INTERFACE E FUNÇÕES -->
     <script>
         window.switchTab = function(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1083,43 +1111,40 @@
             window.scrollTo(0, 0);
         }
 
-        window.toggleUser = function() {
-            let temp = appData.usuarioAtual;
-            appData.usuarioAtual = appData.parceiroNome;
-            appData.parceiroNome = temp;
-            
-            document.getElementById('currentUserAvatar').innerText = appData.usuarioAtual.charAt(0).toUpperCase();
-            document.getElementById('currentUserName').innerText = appData.usuarioAtual;
-            document.getElementById('inputNomeUsuario').value = appData.usuarioAtual;
-            document.getElementById('inputNomeParceiro').value = appData.parceiroNome;
-            document.getElementById('lblNomeP1').innerText = appData.usuarioAtual;
-            document.getElementById('lblNomeP2').innerText = appData.parceiroNome;
-            document.getElementById('lblPerfilAtivoTituloCasa').innerText = appData.usuarioAtual;
-            document.getElementById('lblPerfilAtivoTituloObj').innerText = appData.usuarioAtual;
-            
+        window.toggleDarkMode = function() {
+            appData.darkMode = !appData.darkMode;
+            if (appData.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('darkModeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
             salvarDados();
         }
 
-        window.atualizarNomeUsuario = function(nome) {
+        window.atualizarNomeP1 = function(nome) {
             if(!nome) return;
-            appData.usuarioAtual = nome;
-            document.getElementById('currentUserAvatar').innerText = nome.charAt(0).toUpperCase();
-            document.getElementById('currentUserName').innerText = nome;
-            document.getElementById('lblNomeP1').innerText = nome;
-            document.getElementById('lblPerfilAtivoTituloCasa').innerText = nome;
-            document.getElementById('lblPerfilAtivoTituloObj').innerText = nome;
+            appData.nomeP1 = nome;
+            document.getElementById('lblRendaP1_05').innerText = nome;
+            document.getElementById('lblRendaP1_20').innerText = nome;
             salvarDados();
         }
 
-        window.atualizarNomeParceiro = function(nome) {
+        window.atualizarNomeP2 = function(nome) {
             if(!nome) return;
-            appData.parceiroNome = nome;
-            document.getElementById('lblNomeP2').innerText = nome;
+            appData.nomeP2 = nome;
+            document.getElementById('lblRendaP2_05').innerText = nome;
+            document.getElementById('lblRendaP2_20').innerText = nome;
             salvarDados();
         }
 
         function calcularFinancas() {
-            let rendaTotal = (parseFloat(appData.renda.p1) || 0) + (parseFloat(appData.renda.p2) || 0) + (parseFloat(appData.renda.extra) || 0);
+            // Soma todas as entradas quinzenais e extras
+            let r = appData.renda;
+            let rendaTotal = (parseFloat(r.p1_05) || 0) + (parseFloat(r.p2_05) || 0) + 
+                             (parseFloat(r.p1_20) || 0) + (parseFloat(r.p2_20) || 0) + 
+                             (parseFloat(r.extra) || 0);
             
             let gastosItensCasa = appData.itensCasa
                 .filter(i => i.status === 'Comprado')
@@ -1134,7 +1159,7 @@
             let sobraEstimada = rendaTotal - totalGastosMes;
 
             let ultimaData = new Date(appData.ultimaAtualizacaoSaldo);
-            let hoje = new Date(2026, 9, 7); // Data atual simulada (outubro de 2026)
+            let hoje = new Date();
             let diffTime = Math.abs(hoje - ultimaData);
             let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -1151,7 +1176,7 @@
             const fin = calcularFinancas();
 
             document.getElementById('lblSaldoAtual').innerText = formatarMoeda(appData.saldoAtual);
-            document.getElementById('lblUltimaData').innerText = new Date(appData.ultimaAtualizacaoSaldo).toLocaleDateString('pt-BR');
+            document.getElementById('lblUltimaData').innerText = new Date(appData.ultimaAtualizacaoSaldo).toLocaleDateString('pt-PT');
             document.getElementById('lblDiasAtras').innerText = fin.diffDays === 0 ? 'Atualizado hoje' : `Atualizado há ${fin.diffDays} dias`;
 
             document.getElementById('lblRendaTotal').innerText = formatarMoeda(fin.rendaTotal);
@@ -1165,12 +1190,12 @@
                 document.getElementById('barSaudeFinanceira').style.background = 'var(--danger)';
                 document.getElementById('lblStatusOrcamentoBadge').className = 'badge badge-urgent';
                 document.getElementById('lblStatusOrcamentoBadge').innerText = 'Atenção aos Gastos';
-                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Vocês estão gastando mais de 90% da renda!';
+                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Estão a gastar mais de 90% da renda!';
             } else {
                 document.getElementById('barSaudeFinanceira').style.background = 'var(--success)';
                 document.getElementById('lblStatusOrcamentoBadge').className = 'badge badge-waiting';
                 document.getElementById('lblStatusOrcamentoBadge').innerText = 'Dentro do Orçamento';
-                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Controle financeiro equilibrado no mês.';
+                document.getElementById('lblResumoOrcamentoTexto').innerText = 'Controlo financeiro equilibrado no mês.';
             }
 
             renderizarItensCasa();
@@ -1181,7 +1206,7 @@
             renderizarAtividades();
         }
 
-        // --- MANIPULAÇÃO DE ITENS DA CASA (FILTRADO POR PERFIL) ---
+        // --- ITENS DA CASA (PARTILHADOS) ---
         let filtroCategoriaAtual = 'todos';
 
         window.filterCasa = function(cat) {
@@ -1207,15 +1232,13 @@
             let container = document.getElementById('casaListContainer');
             container.innerHTML = '';
             
-            // Se o item não tiver 'criadoPor' definido (dados antigos), assume o usuário atual para não sumir
-            let itensFiltrados = appData.itensCasa.filter(i => (i.criadoPor || appData.usuarioAtual) === appData.usuarioAtual);
-
+            let itensFiltrados = appData.itensCasa;
             if(filtroCategoriaAtual !== 'todos') {
                 itensFiltrados = itensFiltrados.filter(i => i.categoria === filtroCategoriaAtual);
             }
 
             if(itensFiltrados.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><p>Nenhum plano cadastrado por ${appData.usuarioAtual} nesta categoria.</p></div>`;
+                container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-basket-shopping"></i><p>Nenhum item encontrado nesta categoria.</p></div>`;
                 return;
             }
 
@@ -1241,7 +1264,6 @@
                         <span><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
                         <span><b>Est:</b> ${formatarMoeda(item.valorEst)} ${item.valorReal > 0 ? '| <b>Real:</b> ' + formatarMoeda(item.valorReal) : ''}</span>
                     </div>
-                    <div class="activity-log">Planejado por ${item.criadoPor || appData.usuarioAtual} em ${formatarData(item.data)}</div>
                 `;
                 container.appendChild(card);
             });
@@ -1260,12 +1282,11 @@
             let novoItem = {
                 id: Date.now(),
                 nome, categoria, prioridade, status, valorEst, valorReal,
-                criadoPor: appData.usuarioAtual, // Vincula ao perfil ativo
                 data: new Date().toISOString().split('T')[0]
             };
 
             appData.itensCasa.unshift(novoItem);
-            registrarAtividade(`${appData.usuarioAtual} adicionou: ${nome} — ${formatarMoeda(valorEst || valorReal)}`);
+            registrarAtividade(`Adicionado à casa: ${nome} — ${formatarMoeda(valorEst || valorReal)}`);
             
             salvarDados();
             closeModal('modalItemCasa');
@@ -1281,7 +1302,7 @@
                 if(item.status === 'Comprado' && item.valorReal === 0) {
                     item.valorReal = item.valorEst;
                 }
-                registrarAtividade(`${appData.usuarioAtual} marcou como ${item.status}: ${item.nome}`);
+                registrarAtividade(`Item marcado como ${item.status}: ${item.nome}`);
                 salvarDados();
             }
         }
@@ -1293,7 +1314,7 @@
             }
         }
 
-        // --- MANIPULAÇÃO DE FINANÇAS E CONTAS ---
+        // --- CONTAS COM NOTIFICAÇÃO DE VENCIMENTO (5 DIAS ANTES) ---
         function renderizarContas() {
             let container = document.getElementById('financasContasContainer');
             container.innerHTML = '';
@@ -1303,17 +1324,35 @@
                 return;
             }
 
+            let hoje = new Date();
+            hoje.setHours(0,0,0,0);
+
             appData.contas.forEach(c => {
                 let badgeClass = c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending';
+                
+                let avisoVencimento = '';
+                if (c.status === 'pendente' && c.vencimento) {
+                    let dataVenc = new Date(c.vencimento + 'T00:00:00');
+                    let diffTime = dataVenc - hoje;
+                    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays >= 0 && diffDays <= 5) {
+                        avisoVencimento = `<span class="badge badge-urgent" style="margin-left: 6px;"><i class="fa-solid fa-bell"></i> Vence em ${diffDays === 0 ? 'hoje' : diffDays + ' dia(s)'}!</span>`;
+                    } else if (diffDays < 0) {
+                        avisoVencimento = `<span class="badge badge-urgent" style="margin-left: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Vencida!</span>`;
+                    }
+                }
+
                 let card = document.createElement('div');
                 card.className = 'list-card';
                 card.innerHTML = `
                     <div class="list-card-header">
                         <div>
                             <span class="badge ${badgeClass}">${c.status.toUpperCase()}</span>
+                            ${avisoVencimento}
                             <div class="list-card-title" style="margin-top: 4px;">${c.nome}</div>
                         </div>
-                        <div style="font-weight: 700; color: var(--dark);">${formatarMoeda(c.valor)}</div>
+                        <div style="font-weight: 700; color: var(--text-color);">${formatarMoeda(c.valor)}</div>
                     </div>
                     <div class="list-card-details">
                         <span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span>
@@ -1337,7 +1376,7 @@
             if(!nome || !valor) { alert('Preencha o nome e o valor da conta.'); return; }
 
             appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status });
-            registrarAtividade(`${appData.usuarioAtual} cadastrou conta: ${nome} — ${formatarMoeda(valor)}`);
+            registrarAtividade(`Conta registada: ${nome} — ${formatarMoeda(valor)}`);
             
             salvarDados();
             closeModal('modalConta');
@@ -1349,7 +1388,7 @@
             let c = appData.contas.find(x => x.id === id);
             if(c) {
                 c.status = c.status === 'paga' ? 'pendente' : 'paga';
-                registrarAtividade(`${appData.usuarioAtual} marcou conta ${c.nome} como ${c.status}`);
+                registrarAtividade(`Conta ${c.nome} marcada como ${c.status}`);
                 salvarDados();
             }
         }
@@ -1392,7 +1431,7 @@
                         </div>
                     </div>
                     <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between; margin-top: 4px;">
-                        <span>Planejado: ${formatarMoeda(planejado)}</span>
+                        <span>Planeado: ${formatarMoeda(planejado)}</span>
                         <span>Gasto Real: ${formatarMoeda(gastoReal)}</span>
                     </div>
                     <div class="progress-container">
@@ -1416,29 +1455,28 @@
         }
 
         window.salvarRenda = function() {
-            appData.renda.p1 = parseFloat(document.getElementById('rendaP1').value) || 0;
-            appData.renda.p2 = parseFloat(document.getElementById('rendaP2').value) || 0;
+            appData.renda.p1_05 = parseFloat(document.getElementById('rendaP1_05').value) || 0;
+            appData.renda.p2_05 = parseFloat(document.getElementById('rendaP2_05').value) || 0;
+            appData.renda.p1_20 = parseFloat(document.getElementById('rendaP1_20').value) || 0;
+            appData.renda.p2_20 = parseFloat(document.getElementById('rendaP2_20').value) || 0;
             appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0;
 
-            registrarAtividade(`${appData.usuarioAtual} atualizou as rendas do casal.`);
+            registrarAtividade(`Rendas quinzenais atualizadas.`);
             salvarDados();
             closeModal('modalRenda');
         }
 
-        // --- OBJETIVOS E METAS (FILTRADO POR PERFIL) ---
+        // --- OBJETIVOS / METAS DO CASAL (PARTILHADAS) ---
         function renderizarObjetivos() {
             let container = document.getElementById('objetivosContainer');
             container.innerHTML = '';
 
-            // Filtra os objetivos para mostrar apenas os criados pelo usuário atual
-            let objetivosFiltrados = appData.objetivos.filter(o => (o.criadoPor || appData.usuarioAtual) === appData.usuarioAtual);
-
-            if(objetivosFiltrados.length === 0) {
-                container.innerHTML = `<div class="empty-state"><p>Nenhum objetivo cadastrado por ${appData.usuarioAtual}.</p></div>`;
+            if(appData.objetivos.length === 0) {
+                container.innerHTML = `<div class="empty-state"><p>Nenhuma meta do casal cadastrada.</p></div>`;
                 return;
             }
 
-            objetivosFiltrados.forEach(obj => {
+            appData.objetivos.forEach(obj => {
                 let progresso = obj.valorDesejado > 0 ? (obj.valorGuardado / obj.valorDesejado) * 100 : 0;
                 let falta = obj.valorDesejado - obj.valorGuardado;
 
@@ -1478,10 +1516,9 @@
                 nome, 
                 valorDesejado, 
                 valorGuardado, 
-                prazo, 
-                criadoPor: appData.usuarioAtual // Vincula ao perfil ativo
+                prazo 
             });
-            registrarAtividade(`${appData.usuarioAtual} criou objetivo: ${nome}`);
+            registrarAtividade(`Nova meta do casal criada: ${nome}`);
             
             salvarDados();
             closeModal('modalObjetivo');
@@ -1491,7 +1528,7 @@
         }
 
         window.excluirObjetivo = function(id) {
-            if(confirm('Excluir este objetivo?')) {
+            if(confirm('Excluir esta meta?')) {
                 appData.objetivos = appData.objetivos.filter(o => o.id !== id);
                 salvarDados();
             }
@@ -1507,12 +1544,12 @@
             appData.ultimaAtualizacaoSaldo = new Date().toISOString();
             
             appData.historicoSaldo.unshift({
-                data: new Date().toLocaleString('pt-BR'),
+                data: new Date().toLocaleString('pt-PT'),
                 valor: val,
                 obs: obs
             });
 
-            registrarAtividade(`${appData.usuarioAtual} atualizou o saldo para ${formatarMoeda(val)}`);
+            registrarAtividade(`Saldo atualizado para ${formatarMoeda(val)}`);
             salvarDados();
             closeModal('modalSaldo');
             document.getElementById('modalSaldoValor').value = '';
@@ -1530,14 +1567,14 @@
                         <div style="font-size: 13px; font-weight: 700;">${formatarMoeda(h.valor)}</div>
                         <div style="font-size: 11px; color: var(--gray);">${h.data}</div>
                     </div>
-                    <div style="font-size: 11px; color: var(--dark);">${h.obs}</div>
+                    <div style="font-size: 11px; color: var(--text-color);">${h.obs}</div>
                 `;
                 container.appendChild(div);
             });
         }
 
         function registrarAtividade(texto) {
-            let dataHoje = new Date().toLocaleDateString('pt-BR');
+            let dataHoje = new Date().toLocaleDateString('pt-PT');
             appData.atividades.unshift({ texto, data: dataHoje });
             if(appData.atividades.length > 20) appData.atividades.pop();
         }
@@ -1564,13 +1601,6 @@
             return 'R$ ' + (parseFloat(val) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function formatarData(dataStr) {
-            if(!dataStr) return '';
-            let p = dataStr.split('-');
-            if(p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
-            return dataStr;
-        }
-
         window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; }
         window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -1581,9 +1611,12 @@
         window.openModalItemCasa = function() { openModal('modalItemCasa'); }
         window.openModalConta = function() { openModal('modalConta'); }
         window.openModalRenda = function() {
-            document.getElementById('rendaP1').value = appData.renda.p1;
-            document.getElementById('rendaP2').value = appData.renda.p2;
-            document.getElementById('rendaExtra').value = appData.renda.extra;
+            let r = appData.renda;
+            document.getElementById('rendaP1_05').value = r.p1_05 || '';
+            document.getElementById('rendaP2_05').value = r.p2_05 || '';
+            document.getElementById('rendaP1_20').value = r.p1_20 || '';
+            document.getElementById('rendaP2_20').value = r.p2_20 || '';
+            document.getElementById('rendaExtra').value = r.extra || '';
             openModal('modalRenda');
         }
         window.openModalOrcamento = function() {
@@ -1630,7 +1663,7 @@
                     deferredPrompt = null;
                 });
             } else {
-                alert('Para instalar, abra o menu do seu navegador (Chrome ou Safari) e selecione "Adicionar à Tela Inicial".');
+                alert('Para instalar, abra o menu do seu navegador e selecione "Adicionar ao Ecrã Inicial".');
             }
         }
     </script>
