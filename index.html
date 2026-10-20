@@ -19,8 +19,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Biblioteca para Fogos de Artifício / Confete -->
+    <!-- Fogos de Artifício / Confete -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <!-- Leitor de QR Code / Código de Barras -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
         :root {
@@ -79,7 +82,7 @@
             overflow-x: hidden;
         }
 
-        /* --- TELA DE BOAS VINDAS --- */
+        /* TELA DE BOAS VINDAS */
         .welcome-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -145,7 +148,6 @@
             cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-transform: uppercase; letter-spacing: 1px;
         }
         .btn-entrar:active { transform: scale(0.95); }
-        /* --------------------------- */
 
         header {
             background: var(--bg-card); padding: 16px 20px; display: flex; justify-content: space-between;
@@ -263,7 +265,6 @@
             <button class="btn-entrar" onclick="entrarApp()">Entrar</button>
         </div>
     </div>
-    <!-- FIM TELA DE BOAS VINDAS -->
 
     <header>
         <div class="app-brand">
@@ -345,13 +346,19 @@
         <section id="tab-casa" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Itens & Necessidades</h2>
-                <button class="btn btn-sm" onclick="openModalItemCasa()">
-                    <i class="fa-solid fa-plus"></i> Novo Item
-                </button>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-secondary btn-sm" onclick="abrirScannerQR()">
+                        <i class="fa-solid fa-qrcode"></i> Ler QR
+                    </button>
+                    <button class="btn btn-sm" onclick="openModalItemCasa()">
+                        <i class="fa-solid fa-plus"></i> Novo Item
+                    </button>
+                </div>
             </div>
 
             <div class="filter-chips" id="casaFilterChips">
                 <div class="chip active" onclick="filterCasa('todos', this)">Todos</div>
+                <div class="chip" onclick="filterCasa('Mercado', this)">🛒 Mercado</div>
                 <div class="chip" onclick="filterCasa('Cozinha', this)">🍳 Cozinha</div>
                 <div class="chip" onclick="filterCasa('Quarto', this)">🛏️ Quarto</div>
                 <div class="chip" onclick="filterCasa('Banheiro', this)">🚿 Banheiro</div>
@@ -414,6 +421,12 @@
                     <input type="text" id="inputNomeP2" value="Thayna" onchange="atualizarNomeP2(this.value)">
                 </div>
                 <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Backup JSON</button>
+                
+                <input type="file" id="fileImportar" accept=".json" style="display: none;" onchange="importarBackup(event)">
+                <button class="btn btn-outline" style="margin-top: 8px;" onclick="document.getElementById('fileImportar').click()">
+                    <i class="fa-solid fa-upload"></i> Restaurar Backup JSON
+                </button>
+
                 <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Geral (App e Nuvem)</button>
             </div>
         </section>
@@ -439,9 +452,22 @@
         </button>
     </nav>
 
-    <!-- MODAIS -->
+    <!-- MODAL SCANNER QR CODE -->
+    <div class="modal-overlay" id="modalScannerQR">
+        <div class="modal-content" style="text-align: center;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-qrcode"></i> Escanear Item</div>
+                <button class="icon-btn" onclick="fecharScannerQR()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
+                Aponte a câmera para o QR Code contendo os dados do item.
+            </p>
+            <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000; min-height: 250px;"></div>
+            <button class="btn btn-outline" style="margin-top: 14px;" onclick="fecharScannerQR()">Cancelar</button>
+        </div>
+    </div>
 
-    <!-- Modal Item Casa (AGORA PERMITE EDIÇÃO) -->
+    <!-- MODAL ITEM CASA -->
     <div class="modal-overlay" id="modalItemCasa">
         <div class="modal-content">
             <div class="modal-header">
@@ -450,7 +476,7 @@
             </div>
             <div class="form-group">
                 <label>Nome do Item / Compra</label>
-                <input type="text" id="itemNome" placeholder="Ex: Compra Mercado Semanal, Panela...">
+                <input type="text" id="itemNome" placeholder="Ex: Panela, Compra Mercado...">
             </div>
             <div class="form-group">
                 <label>Categoria</label>
@@ -481,11 +507,11 @@
         </div>
     </div>
 
-    <!-- Modal Conta -->
+    <!-- MODAL CONTA -->
     <div class="modal-overlay" id="modalConta">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Cadastrar Conta / Boleto</div>
+                <div class="modal-title" id="modalContaTitle">Cadastrar Conta / Boleto</div>
                 <button class="icon-btn" onclick="closeModal('modalConta')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="form-group">
@@ -527,7 +553,7 @@
         </div>
     </div>
 
-    <!-- Modal Rendas -->
+    <!-- MODAL RENDAS -->
     <div class="modal-overlay" id="modalRenda">
         <div class="modal-content">
             <div class="modal-header">
@@ -571,7 +597,7 @@
         </div>
     </div>
 
-    <!-- Modal Orçamento -->
+    <!-- MODAL ORÇAMENTO -->
     <div class="modal-overlay" id="modalOrcamento">
         <div class="modal-content">
             <div class="modal-header">
@@ -587,7 +613,7 @@
         </div>
     </div>
 
-    <!-- Modal Metas -->
+    <!-- MODAL METAS -->
     <div class="modal-overlay" id="modalObjetivo">
         <div class="modal-content">
             <div class="modal-header">
@@ -621,7 +647,7 @@
         window.dbRef = db;
         window.docRef = doc(db, "dados", "app_casal");
 
-        window.appData = {
+        window.defaultAppData = {
             nomeP1: 'Jhonatan',
             nomeP2: 'Thayna',
             darkMode: false,
@@ -634,18 +660,26 @@
             atividades: []
         };
 
+        window.appData = { ...window.defaultAppData };
+
         window.salvarDados = async function() {
-            try { await setDoc(window.docRef, window.appData); } catch (e) { console.error("Erro Firebase:", e); }
+            try { 
+                await setDoc(window.docRef, window.appData); 
+            } catch (e) { 
+                console.error("Erro Firebase:", e); 
+            }
             localStorage.setItem('app_casal_data_v1', JSON.stringify(window.appData));
             window.atualizarInterface();
         };
 
         onSnapshot(window.docRef, (docSnap) => {
             if (docSnap.exists() && docSnap.data().nomeP1) {
-                window.appData = docSnap.data();
+                window.appData = { ...window.defaultAppData, ...docSnap.data() };
             } else {
                 const saved = localStorage.getItem('app_casal_data_v1');
-                if (saved) { try { window.appData = JSON.parse(saved); } catch(e) {} }
+                if (saved) { 
+                    try { window.appData = { ...window.defaultAppData, ...JSON.parse(saved) }; } catch(e) {} 
+                }
                 window.salvarDados();
             }
             sincronizarConfigNomes();
@@ -654,23 +688,36 @@
         });
 
         function sincronizarConfigNomes() {
-            if(document.getElementById('inputNomeP1')) {
-                document.getElementById('inputNomeP1').value = window.appData.nomeP1 || 'Jhonatan';
-                document.getElementById('inputNomeP2').value = window.appData.nomeP2 || 'Thayna';
-                document.getElementById('lblRendaP1_05').innerText = window.appData.nomeP1 || 'Jhonatan';
-                document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1 || 'Jhonatan';
-                document.getElementById('lblRendaP2_05').innerText = window.appData.nomeP2 || 'Thayna';
-                document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2 || 'Thayna';
+            const p1 = document.getElementById('inputNomeP1');
+            const p2 = document.getElementById('inputNomeP2');
+
+            if (p1 && document.activeElement !== p1) {
+                p1.value = window.appData.nomeP1 || 'Jhonatan';
             }
+            if (p2 && document.activeElement !== p2) {
+                p2.value = window.appData.nomeP2 || 'Thayna';
+            }
+
+            const n1 = window.appData.nomeP1 || 'Jhonatan';
+            const n2 = window.appData.nomeP2 || 'Thayna';
+
+            ['lblRendaP1_05', 'lblRendaP1_20'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = n1;
+            });
+            ['lblRendaP2_05', 'lblRendaP2_20'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = n2;
+            });
         }
     </script>
 
     <script>
-        // --- VARIÁVEIS PARA RASTREAR EDIÇÃO ---
         let editMetaId = null;
         let editItemCasaId = null;
+        let editContaId = null;
+        let html5QrCode = null;
 
-        // --- FUNÇÃO TELA DE BOAS VINDAS & FOGOS ---
         window.entrarApp = function() {
             let ws = document.getElementById('welcomeScreen');
             ws.style.opacity = '0';
@@ -688,21 +735,27 @@
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
         };
-        // ------------------------------------------
 
-        function normalizarCategoria(cat) { const comodos = ['Cozinha', 'Quarto', 'Banheiro', 'Sala', 'Lavanderia']; if (comodos.includes(cat)) return 'Casa'; return cat; }
+        function normalizarCategoria(cat) { 
+            const comodos = ['Cozinha', 'Quarto', 'Banheiro', 'Sala', 'Lavanderia']; 
+            if (comodos.includes(cat)) return 'Casa'; 
+            return cat; 
+        }
 
         window.aplicar50Porcento = function(inputId) {
-            let elem = document.getElementById(inputId); let val = parseFloat(elem.value);
+            let elem = document.getElementById(inputId); 
+            let val = parseFloat(elem.value);
             if (!val || isNaN(val)) { val = 1796.45; }
-            let metade = (val / 2).toFixed(2); elem.value = metade;
+            let metade = (val / 2).toFixed(2); 
+            elem.value = metade;
         };
 
         window.switchTab = function(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            if (el) el.classList.add('active'); window.scrollTo(0, 0);
+            if (el) el.classList.add('active'); 
+            window.scrollTo(0, 0);
         };
 
         window.toggleDarkMode = function() {
@@ -733,13 +786,20 @@
             let mesAtualReal = new Date().getMonth();
             if (appData.mesReferencia === undefined) { appData.mesReferencia = mesAtualReal; salvarDados(); return; }
             if (appData.mesReferencia !== mesAtualReal) {
-                const fin = calcularFinancas(); let sobraDoMesPassado = fin.sobraEstimada > 0 ? fin.sobraEstimada : 0;
-                if (sobraDoMesPassado > 0) { appData.renda.extra = (parseFloat(appData.renda.extra) || 0) + sobraDoMesPassado; }
+                const fin = calcularFinancas(); 
+                let sobraDoMesPassado = fin.sobraEstimada > 0 ? fin.sobraEstimada : 0;
+                if (sobraDoMesPassado > 0) { 
+                    appData.renda.extra = (parseFloat(appData.renda.extra) || 0) + sobraDoMesPassado; 
+                }
                 appData.contas = appData.contas.filter(c => c.status === 'pendente' || c.recorrente);
                 appData.contas.forEach(c => {
                     if (c.recorrente) {
                         c.status = 'pendente';
-                        if (c.vencimento) { let d = new Date(c.vencimento); d.setMonth(d.getMonth() + 1); c.vencimento = d.toISOString().split('T')[0]; }
+                        if (c.vencimento) { 
+                            let d = new Date(c.vencimento); 
+                            d.setMonth(d.getMonth() + 1); 
+                            c.vencimento = d.toISOString().split('T')[0]; 
+                        }
                     }
                 });
                 appData.itensCasa = appData.itensCasa.filter(i => i.status !== 'Comprado');
@@ -760,31 +820,140 @@
             document.getElementById('lblContasVencidas').innerText = formatarMoeda(fin.contasVencidas); 
 
             let notice = document.getElementById('cofrinhoNotice');
-            if (fin.sobraEstimada < 0) { notice.style.display = 'flex'; document.getElementById('lblValorCofrinho').innerText = formatarMoeda(Math.abs(fin.sobraEstimada)); } else { notice.style.display = 'none'; }
+            if (fin.sobraEstimada < 0) { 
+                notice.style.display = 'flex'; 
+                document.getElementById('lblValorCofrinho').innerText = formatarMoeda(Math.abs(fin.sobraEstimada)); 
+            } else { 
+                notice.style.display = 'none'; 
+            }
 
             let pctComprometida = fin.rendaTotal > 0 ? (fin.compromissoTotal / fin.rendaTotal) * 100 : 0;
             document.getElementById('barSaudeFinanceira').style.width = Math.min(pctComprometida, 100) + '%';
             
-            let badge = document.getElementById('lblStatusOrcamentoBadge'); let resumo = document.getElementById('lblResumoOrcamentoTexto');
-            if (pctComprometida > 100) { badge.className = 'badge badge-urgent'; badge.innerText = 'Excedido (Usar PicPay)'; resumo.innerText = `Compromissos superam as entradas em ${formatarMoeda(Math.abs(fin.sobraEstimada))}.`; } 
-            else if (pctComprometida > 85) { badge.className = 'badge badge-important'; badge.innerText = 'No Limite'; resumo.innerText = `${pctComprometida.toFixed(0)}% do orçamento comprometido.`; } 
-            else { badge.className = 'badge badge-waiting'; badge.innerText = 'Dentro do Teto'; resumo.innerText = `Sobra livre prevista de ${formatarMoeda(fin.sobraEstimada)}.`; }
+            let badge = document.getElementById('lblStatusOrcamentoBadge'); 
+            let resumo = document.getElementById('lblResumoOrcamentoTexto');
+            if (pctComprometida > 100) { 
+                badge.className = 'badge badge-urgent'; 
+                badge.innerText = 'Excedido (Usar PicPay)'; 
+                resumo.innerText = `Compromissos superam as entradas em ${formatarMoeda(Math.abs(fin.sobraEstimada))}.`; 
+            } else if (pctComprometida > 85) { 
+                badge.className = 'badge badge-important'; 
+                badge.innerText = 'No Limite'; 
+                resumo.innerText = `${pctComprometida.toFixed(0)}% do orçamento comprometido.`; 
+            } else { 
+                badge.className = 'badge badge-waiting'; 
+                badge.innerText = 'Dentro do Teto'; 
+                resumo.innerText = `Sobra livre prevista de ${formatarMoeda(fin.sobraEstimada)}.`; 
+            }
 
             if (appData.darkMode) document.body.classList.add('dark-mode');
-            renderizarItensCasa(); renderizarContas(); renderizarOrcamento(); renderizarObjetivos(); renderizarAtividades();
+            renderizarItensCasa(); 
+            renderizarContas(); 
+            renderizarOrcamento(); 
+            renderizarObjetivos(); 
+            renderizarAtividades();
         };
 
-        // --- CASA (CRIAR E EDITAR) ---
+        // --- SCANNER QR CODE ---
+        window.abrirScannerQR = function() {
+            openModal('modalScannerQR');
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-reader");
+            }
+            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                () => {}
+            ).catch(err => {
+                alert("Não foi possível acessar a câmera. Verifique se o site está rodando em HTTPS ou Localhost.");
+                fecharScannerQR();
+            });
+        };
+
+        window.fecharScannerQR = function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    closeModal('modalScannerQR');
+                }).catch(() => {
+                    closeModal('modalScannerQR');
+                });
+            } else {
+                closeModal('modalScannerQR');
+            }
+        };
+
+        function onScanSuccess(decodedText) {
+            fecharScannerQR();
+            try {
+                let itemNome = "";
+                let itemQtd = 1;
+                let itemPreco = 0;
+                let itemCategoria = "Mercado";
+
+                // Formato 1: JSON {"nome":"Arroz","qtd":2,"preco":25.5,"categoria":"Mercado"}
+                if (decodedText.trim().startsWith('{')) {
+                    const data = JSON.parse(decodedText);
+                    itemNome = data.nome || "Item Escaneado";
+                    itemQtd = parseInt(data.qtd) || 1;
+                    itemPreco = parseFloat(data.preco) || 0;
+                    if (data.categoria) itemCategoria = data.categoria;
+                } 
+                // Formato 2: Delimitado por ponto e vírgula: "Nome;Qtd;Preco;Categoria"
+                else if (decodedText.includes(';')) {
+                    const partes = decodedText.split(';');
+                    itemNome = partes[0]?.trim() || "Item Escaneado";
+                    itemQtd = parseInt(partes[1]) || 1;
+                    itemPreco = parseFloat(partes[2]) || 0;
+                    if (partes[3]) itemCategoria = partes[3].trim();
+                } 
+                // Formato 3: Texto Simples
+                else {
+                    itemNome = decodedText;
+                }
+
+                const valorFinal = (itemPreco * itemQtd);
+                const nomeFormatado = itemQtd > 1 ? `${itemNome} (x${itemQtd})` : itemNome;
+
+                appData.itensCasa.unshift({
+                    id: Date.now(),
+                    nome: nomeFormatado,
+                    categoria: itemCategoria,
+                    status: 'Comprado',
+                    valorReal: valorFinal
+                });
+
+                registrarAtividade(`Scan QR: ${nomeFormatado} — ${formatarMoeda(valorFinal)}`);
+                salvarDados();
+                confetti({ particleCount: 35, spread: 60, origin: { y: 0.7 } });
+            } catch (e) {
+                alert("O QR Code lido não possui um formato reconhecido.");
+            }
+        }
+
+        // --- ABA CASA ---
         let filtroCasaAtual = 'todos';
-        window.filterCasa = function(cat, el) { filtroCasaAtual = cat; document.querySelectorAll('#casaFilterChips .chip').forEach(c => c.classList.remove('active')); if (el) el.classList.add('active'); renderizarItensCasa(); };
+        window.filterCasa = function(cat, el) { 
+            filtroCasaAtual = cat; 
+            document.querySelectorAll('#casaFilterChips .chip').forEach(c => c.classList.remove('active')); 
+            if (el) el.classList.add('active'); 
+            renderizarItensCasa(); 
+        };
         
         function renderizarItensCasa() {
-            let container = document.getElementById('casaListContainer'); container.innerHTML = '';
-            let list = appData.itensCasa; if (filtroCasaAtual !== 'todos') list = list.filter(i => i.categoria === filtroCasaAtual);
-            if (list.length === 0) { container.innerHTML = `<div class="empty-state">Nenhuma compra ou item cadastrado aqui.</div>`; return; }
+            let container = document.getElementById('casaListContainer'); 
+            container.innerHTML = '';
+            let list = appData.itensCasa; 
+            if (filtroCasaAtual !== 'todos') list = list.filter(i => i.categoria === filtroCasaAtual);
+            if (list.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma compra ou item cadastrado aqui.</div>`; 
+                return; 
+            }
             list.forEach(item => {
-                let card = document.createElement('div'); card.className = 'list-card';
-                // Adicionado botão de editar (ícone do lápis) na linha abaixo
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
                 card.innerHTML = `
                     <div class="list-card-header">
                         <div>
@@ -806,7 +975,7 @@
         }
 
         window.openModalItemCasa = function() { 
-            editItemCasaId = null; // Reseta ID
+            editItemCasaId = null;
             document.getElementById('modalItemCasaTitle').innerText = "Novo Item / Compra";
             document.getElementById('itemNome').value = '';
             document.getElementById('itemCategoria').value = 'Mercado';
@@ -818,7 +987,7 @@
         window.editarItemCasa = function(id) {
             let item = appData.itensCasa.find(i => i.id === id);
             if (item) {
-                editItemCasaId = id; // Grava qual item está sendo editado
+                editItemCasaId = id;
                 document.getElementById('modalItemCasaTitle').innerText = "Editar Item / Compra";
                 document.getElementById('itemNome').value = item.nome;
                 document.getElementById('itemCategoria').value = item.categoria;
@@ -834,10 +1003,12 @@
             let status = document.getElementById('itemStatus').value; 
             let valorReal = parseFloat(document.getElementById('itemValorReal').value) || 0;
             
-            if (!nome || valorReal <= 0) { alert('Informe o nome e o valor da compra.'); return; }
+            if (!nome || valorReal <= 0) { 
+                alert('Informe o nome e o valor da compra.'); 
+                return; 
+            }
 
             if (editItemCasaId !== null) {
-                // Modo Edição
                 let index = appData.itensCasa.findIndex(i => i.id === editItemCasaId);
                 if (index !== -1) {
                     appData.itensCasa[index].nome = nome;
@@ -847,7 +1018,6 @@
                     registrarAtividade(`Edição: ${nome} — ${formatarMoeda(valorReal)}`);
                 }
             } else {
-                // Modo Criação
                 appData.itensCasa.unshift({ id: Date.now(), nome, categoria, status, valorReal }); 
                 registrarAtividade(`Compra: ${nome} — ${formatarMoeda(valorReal)}`);
             }
@@ -856,49 +1026,173 @@
             closeModal('modalItemCasa'); 
         };
 
-        window.excluirItem = function(id) { appData.itensCasa = appData.itensCasa.filter(i => i.id !== id); salvarDados(); };
+        window.excluirItem = function(id) { 
+            appData.itensCasa = appData.itensCasa.filter(i => i.id !== id); 
+            salvarDados(); 
+        };
 
-        // --- CONTAS ---
+        // --- ABA CONTAS ---
         function renderizarContas() {
-            let container = document.getElementById('financasContasContainer'); container.innerHTML = '';
-            if (appData.contas.length === 0) { container.innerHTML = `<div class="empty-state">Nenhuma conta cadastrada.</div>`; return; }
+            let container = document.getElementById('financasContasContainer'); 
+            container.innerHTML = '';
+            if (appData.contas.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma conta cadastrada.</div>`; 
+                return; 
+            }
             appData.contas.forEach(c => {
                 let fixaBadge = c.recorrente ? `<span title="Conta Fixa" style="color: var(--info); margin-left: 5px;"><i class="fa-solid fa-rotate"></i></span>` : '';
-                let card = document.createElement('div'); card.className = 'list-card';
-                card.innerHTML = `<div class="list-card-header"><div><span class="badge ${c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending'}">${c.status.toUpperCase()}</span><div class="list-card-title" style="margin-top: 4px;">${c.nome} ${fixaBadge}</div></div><div style="font-weight: 700;">${formatarMoeda(c.valor)}</div></div><div class="list-card-details"><span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span><div class="action-icon-group"><button class="icon-btn check" onclick="alternarConta(${c.id})"><i class="fa-solid fa-check"></i></button><button class="icon-btn delete" onclick="excluirConta(${c.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div>
+                            <span class="badge ${c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending'}">${c.status.toUpperCase()}</span>
+                            <div class="list-card-title" style="margin-top: 4px;">${c.nome} ${fixaBadge}</div>
+                        </div>
+                        <div style="font-weight: 700;">${formatarMoeda(c.valor)}</div>
+                    </div>
+                    <div class="list-card-details">
+                        <span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span>
+                        <div class="action-icon-group">
+                            <button class="icon-btn check" onclick="alternarConta(${c.id})"><i class="fa-solid fa-check"></i></button>
+                            <button class="icon-btn edit" onclick="editarConta(${c.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="icon-btn delete" onclick="excluirConta(${c.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
                 container.appendChild(card);
             });
         }
-        window.salvarConta = function() {
-            let nome = document.getElementById('contaNome').value; let categoria = document.getElementById('contaCategoria').value; let valor = parseFloat(document.getElementById('contaValor').value) || 0; let vencimento = document.getElementById('contaVencimento').value; let status = document.getElementById('contaStatus').value; let recorrente = document.getElementById('contaRecorrente').checked;
-            if (!nome || valor <= 0) { alert('Informe a descrição e o valor.'); return; }
-            appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status, recorrente }); registrarAtividade(`Conta: ${nome} — ${formatarMoeda(valor)}`);
-            salvarDados(); closeModal('modalConta'); document.getElementById('contaNome').value = ''; document.getElementById('contaValor').value = '';
-        };
-        window.alternarConta = function(id) { let c = appData.contas.find(x => x.id === id); if (c) { c.status = c.status === 'paga' ? 'pendente' : 'paga'; salvarDados(); } };
-        window.excluirConta = function(id) { appData.contas = appData.contas.filter(x => x.id !== id); salvarDados(); };
 
-        // --- ORÇAMENTO E RENDA ---
+        window.openModalConta = function() {
+            editContaId = null;
+            document.getElementById('modalContaTitle').innerText = "Cadastrar Conta / Boleto";
+            document.getElementById('contaNome').value = '';
+            document.getElementById('contaCategoria').value = 'Casa';
+            document.getElementById('contaValor').value = '';
+            document.getElementById('contaVencimento').value = '';
+            document.getElementById('contaStatus').value = 'pendente';
+            document.getElementById('contaRecorrente').checked = true;
+            openModal('modalConta');
+        };
+
+        window.editarConta = function(id) {
+            let c = appData.contas.find(x => x.id === id);
+            if (!c) return;
+            editContaId = id;
+            document.getElementById('modalContaTitle').innerText = "Editar Conta / Boleto";
+            document.getElementById('contaNome').value = c.nome;
+            document.getElementById('contaCategoria').value = c.categoria || 'Casa';
+            document.getElementById('contaValor').value = c.valor;
+            document.getElementById('contaVencimento').value = c.vencimento || '';
+            document.getElementById('contaStatus').value = c.status;
+            document.getElementById('contaRecorrente').checked = !!c.recorrente;
+            openModal('modalConta');
+        };
+
+        window.salvarConta = function() {
+            let nome = document.getElementById('contaNome').value; 
+            let categoria = document.getElementById('contaCategoria').value; 
+            let valor = parseFloat(document.getElementById('contaValor').value) || 0; 
+            let vencimento = document.getElementById('contaVencimento').value; 
+            let status = document.getElementById('contaStatus').value; 
+            let recorrente = document.getElementById('contaRecorrente').checked;
+            
+            if (!nome || valor <= 0) { 
+                alert('Informe a descrição e o valor.'); 
+                return; 
+            }
+
+            if (editContaId !== null) {
+                let index = appData.contas.findIndex(x => x.id === editContaId);
+                if (index !== -1) {
+                    appData.contas[index] = { ...appData.contas[index], nome, categoria, valor, vencimento, status, recorrente };
+                    registrarAtividade(`Edição de Conta: ${nome} — ${formatarMoeda(valor)}`);
+                }
+            } else {
+                appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status, recorrente }); 
+                registrarAtividade(`Conta: ${nome} — ${formatarMoeda(valor)}`);
+            }
+
+            salvarDados(); 
+            closeModal('modalConta');
+        };
+
+        window.alternarConta = function(id) { 
+            let c = appData.contas.find(x => x.id === id); 
+            if (c) { 
+                c.status = c.status === 'paga' ? 'pendente' : 'paga'; 
+                salvarDados(); 
+            } 
+        };
+
+        window.excluirConta = function(id) { 
+            appData.contas = appData.contas.filter(x => x.id !== id); 
+            salvarDados(); 
+        };
+
+        // --- ABA ORÇAMENTO E RENDA ---
         function renderizarOrcamento() {
-            let container = document.getElementById('financasOrcamentoContainer'); container.innerHTML = '';
+            let container = document.getElementById('financasOrcamentoContainer'); 
+            container.innerHTML = '';
             let categorias = ['Casa', 'Mercado', 'Contas Fixas', 'Lazer', 'Tecnologia'];
             categorias.forEach(cat => {
-                let planejado = appData.orcamento[cat] || 0; let gastoItens = appData.itensCasa.filter(i => normalizarCategoria(i.categoria) === cat && i.status === 'Comprado').reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0); let gastoContas = appData.contas.filter(c => normalizarCategoria(c.categoria) === cat && c.status === 'paga').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
-                let totalGasto = gastoItens + gastoContas; let sobra = planejado - totalGasto; let estourou = sobra < 0;
-                let card = document.createElement('div'); card.className = 'list-card';
-                card.innerHTML = `<div class="list-card-header"><div class="list-card-title">${cat}</div><div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}</div></div><div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;"><span>Teto: ${formatarMoeda(planejado)}</span><span>Real: ${formatarMoeda(totalGasto)}</span></div><div class="progress-container"><div class="progress-bar" style="width: ${Math.min((totalGasto / (planejado || 1)) * 100, 100)}%; background: ${estourou ? 'var(--danger)' : 'var(--success)'};"></div></div>`;
+                let planejado = appData.orcamento[cat] || 0; 
+                let gastoItens = appData.itensCasa.filter(i => normalizarCategoria(i.categoria) === cat && i.status === 'Comprado').reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0); 
+                let gastoContas = appData.contas.filter(c => normalizarCategoria(c.categoria) === cat && c.status === 'paga').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                let totalGasto = gastoItens + gastoContas; 
+                let sobra = planejado - totalGasto; 
+                let estourou = sobra < 0;
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div class="list-card-title">${cat}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}</div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;">
+                        <span>Teto: ${formatarMoeda(planejado)}</span>
+                        <span>Real: ${formatarMoeda(totalGasto)}</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${Math.min((totalGasto / (planejado || 1)) * 100, 100)}%; background: ${estourou ? 'var(--danger)' : 'var(--success)'};"></div>
+                    </div>
+                `;
                 container.appendChild(card);
             });
         }
-        window.salvarOrcamento = function() { appData.orcamento.Casa = parseFloat(document.getElementById('orcCasa').value) || 0; appData.orcamento.Mercado = parseFloat(document.getElementById('orcMercado').value) || 0; appData.orcamento['Contas Fixas'] = parseFloat(document.getElementById('orcContasFixas').value) || 0; appData.orcamento.Lazer = parseFloat(document.getElementById('orcLazer').value) || 0; appData.orcamento.Tecnologia = parseFloat(document.getElementById('orcTecnologia').value) || 0; salvarDados(); closeModal('modalOrcamento'); };
-        window.salvarRenda = function() { appData.renda.p1_20 = parseFloat(document.getElementById('rendaP1_20').value) || 0; appData.renda.p2_20 = parseFloat(document.getElementById('rendaP2_20').value) || 0; appData.renda.p1_05 = parseFloat(document.getElementById('rendaP1_05').value) || 0; appData.renda.p2_05 = parseFloat(document.getElementById('rendaP2_05').value) || 0; appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0; salvarDados(); closeModal('modalRenda'); };
 
-        // --- METAS ---
+        window.salvarOrcamento = function() { 
+            appData.orcamento.Casa = parseFloat(document.getElementById('orcCasa').value) || 0; 
+            appData.orcamento.Mercado = parseFloat(document.getElementById('orcMercado').value) || 0; 
+            appData.orcamento['Contas Fixas'] = parseFloat(document.getElementById('orcContasFixas').value) || 0; 
+            appData.orcamento.Lazer = parseFloat(document.getElementById('orcLazer').value) || 0; 
+            appData.orcamento.Tecnologia = parseFloat(document.getElementById('orcTecnologia').value) || 0; 
+            salvarDados(); 
+            closeModal('modalOrcamento'); 
+        };
+
+        window.salvarRenda = function() { 
+            appData.renda.p1_20 = parseFloat(document.getElementById('rendaP1_20').value) || 0; 
+            appData.renda.p2_20 = parseFloat(document.getElementById('rendaP2_20').value) || 0; 
+            appData.renda.p1_05 = parseFloat(document.getElementById('rendaP1_05').value) || 0; 
+            appData.renda.p2_05 = parseFloat(document.getElementById('rendaP2_05').value) || 0; 
+            appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0; 
+            salvarDados(); 
+            closeModal('modalRenda'); 
+        };
+
+        // --- ABA METAS ---
         function renderizarObjetivos() {
-            let container = document.getElementById('objetivosContainer'); container.innerHTML = '';
-            if (appData.objetivos.length === 0) { container.innerHTML = `<div class="empty-state">Nenhuma meta ativa.</div>`; return; }
+            let container = document.getElementById('objetivosContainer'); 
+            container.innerHTML = '';
+            if (appData.objetivos.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma meta ativa.</div>`; 
+                return; 
+            }
             appData.objetivos.forEach(o => {
-                let div = document.createElement('div'); div.className = 'list-card';
+                let div = document.createElement('div'); 
+                div.className = 'list-card';
                 div.innerHTML = `
                     <div class="list-card-header">
                         <div class="list-card-title">${o.nome}</div>
@@ -915,6 +1209,7 @@
                 container.appendChild(div);
             });
         }
+
         window.openModalObjetivo = function() { 
             editMetaId = null; 
             document.getElementById('modalObjetivoTitle').innerText = "Nova Meta do Casal";
@@ -923,6 +1218,7 @@
             document.getElementById('objValorGuardado').value = '';
             openModal('modalObjetivo'); 
         };
+
         window.editarMeta = function(id) {
             let meta = appData.objetivos.find(o => o.id === id);
             if (meta) {
@@ -934,6 +1230,7 @@
                 openModal('modalObjetivo');
             }
         };
+
         window.salvarObjetivo = function() {
             let nome = document.getElementById('objNome').value;
             let valorDesejado = parseFloat(document.getElementById('objValorDesejado').value) || 0;
@@ -946,22 +1243,104 @@
                     appData.objetivos[index].valorDesejado = valorDesejado;
                     appData.objetivos[index].valorGuardado = valorGuardado;
                 }
-            } else { appData.objetivos.push({ id: Date.now(), nome, valorDesejado, valorGuardado }); }
-            salvarDados(); closeModal('modalObjetivo');
+            } else { 
+                appData.objetivos.push({ id: Date.now(), nome, valorDesejado, valorGuardado }); 
+            }
+            salvarDados(); 
+            closeModal('modalObjetivo');
         };
-        window.excluirMeta = function(id) { appData.objetivos = appData.objetivos.filter(o => o.id !== id); salvarDados(); };
 
-        // --- GERAIS ---
-        window.resetarDados = async function() { if (confirm('Tem certeza? Isso apagará os dados do navegador e da nuvem Firebase.')) { localStorage.removeItem('app_casal_data_v1'); try { await setDoc(window.docRef, {}); } catch(e) {} location.reload(); } };
-        function registrarAtividade(texto) { let data = new Date().toLocaleDateString('pt-BR'); appData.atividades.unshift({ texto, data }); if (appData.atividades.length > 15) appData.atividades.pop(); }
-        function renderizarAtividades() { let container = document.getElementById('homeActivityLogContainer'); container.innerHTML = ''; let items = appData.atividades.slice(0, 5); if (items.length === 0) { container.innerHTML = `<div class="empty-state">Sem atividades recentes.</div>`; return; } items.forEach(a => { let d = document.createElement('div'); d.style.fontSize = '11px'; d.style.color = 'var(--gray)'; d.style.padding = '4px 0'; d.innerHTML = `<b>${a.data}:</b> ${a.texto}`; container.appendChild(d); }); }
-        function formatarMoeda(val) { return 'R$ ' + (parseFloat(val) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        window.excluirMeta = function(id) { 
+            appData.objetivos = appData.objetivos.filter(o => o.id !== id); 
+            salvarDados(); 
+        };
+
+        // --- SISTEMA E AUXILIARES ---
+        window.resetarDados = async function() { 
+            if (confirm('Tem certeza? Isso apagará os dados do navegador e resetará o Firebase.')) { 
+                localStorage.removeItem('app_casal_data_v1'); 
+                try { 
+                    await setDoc(window.docRef, window.defaultAppData); 
+                } catch(e) {} 
+                location.reload(); 
+            } 
+        };
+
+        window.importarBackup = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const dadosImportados = JSON.parse(e.target.result);
+                    if (dadosImportados && typeof dadosImportados === 'object') {
+                        window.appData = { ...window.defaultAppData, ...dadosImportados };
+                        await window.salvarDados();
+                        alert('Backup restaurado com sucesso!');
+                    }
+                } catch (err) {
+                    alert('Arquivo JSON inválido.');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        function registrarAtividade(texto) { 
+            let data = new Date().toLocaleDateString('pt-BR'); 
+            appData.atividades.unshift({ texto, data }); 
+            if (appData.atividades.length > 15) appData.atividades.pop(); 
+        }
+
+        function renderizarAtividades() { 
+            let container = document.getElementById('homeActivityLogContainer'); 
+            container.innerHTML = ''; 
+            let items = appData.atividades.slice(0, 5); 
+            if (items.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Sem atividades recentes.</div>`; 
+                return; 
+            } 
+            items.forEach(a => { 
+                let d = document.createElement('div'); 
+                d.style.fontSize = '11px'; 
+                d.style.color = 'var(--gray)'; 
+                d.style.padding = '4px 0'; 
+                d.innerHTML = `<b>${a.data}:</b> ${a.texto}`; 
+                container.appendChild(d); 
+            }); 
+        }
+
+        function formatarMoeda(val) { 
+            return 'R$ ' + (parseFloat(val) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+        }
+
         window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
         window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
-        window.openModalConta = function() { openModal('modalConta'); };
-        window.openModalRenda = function() { document.getElementById('rendaP1_20').value = appData.renda.p1_20 || ''; document.getElementById('rendaP2_20').value = appData.renda.p2_20 || ''; document.getElementById('rendaP1_05').value = appData.renda.p1_05 || ''; document.getElementById('rendaP2_05').value = appData.renda.p2_05 || ''; document.getElementById('rendaExtra').value = appData.renda.extra || ''; openModal('modalRenda'); };
-        window.openModalOrcamento = function() { document.getElementById('orcCasa').value = appData.orcamento.Casa; document.getElementById('orcMercado').value = appData.orcamento.Mercado; document.getElementById('orcContasFixas').value = appData.orcamento['Contas Fixas']; document.getElementById('orcLazer').value = appData.orcamento.Lazer; document.getElementById('orcTecnologia').value = appData.orcamento.Tecnologia; openModal('modalOrcamento'); };
-        window.exportarDados = function() { let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2)); let dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_app_casal.json"); dl.click(); };
+        
+        window.openModalRenda = function() { 
+            document.getElementById('rendaP1_20').value = appData.renda.p1_20 || ''; 
+            document.getElementById('rendaP2_20').value = appData.renda.p2_20 || ''; 
+            document.getElementById('rendaP1_05').value = appData.renda.p1_05 || ''; 
+            document.getElementById('rendaP2_05').value = appData.renda.p2_05 || ''; 
+            document.getElementById('rendaExtra').value = appData.renda.extra || ''; 
+            openModal('modalRenda'); 
+        };
+
+        window.openModalOrcamento = function() { 
+            document.getElementById('orcCasa').value = appData.orcamento.Casa; 
+            document.getElementById('orcMercado').value = appData.orcamento.Mercado; 
+            document.getElementById('orcContasFixas').value = appData.orcamento['Contas Fixas']; 
+            document.getElementById('orcLazer').value = appData.orcamento.Lazer; 
+            document.getElementById('orcTecnologia').value = appData.orcamento.Tecnologia; 
+            openModal('modalOrcamento'); 
+        };
+
+        window.exportarDados = function() { 
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2)); 
+            let dl = document.createElement('a'); 
+            dl.setAttribute("href", dataStr); 
+            dl.setAttribute("download", "backup_app_casal.json"); 
+            dl.click(); 
+        };
     </script>
 </body>
 </html>
