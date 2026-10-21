@@ -19,17 +19,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Fogos de Artifício / Confete -->
+    <!-- Biblioteca para Fogos de Artifício / Confete -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-    <!-- Leitor de QR Code / Código de Barras -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- Biblioteca HTML5 QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <style>
         :root {
             --primary: #FF6584;
             --primary-light: #FFE3E9;
             --secondary: #6C63FF;
+            --secondary-light: #ECEBFF;
             --success: #2ECC71;
             --success-light: #E8F8F0;
             --danger: #E74C3C;
@@ -82,7 +83,7 @@
             overflow-x: hidden;
         }
 
-        /* TELA DE BOAS VINDAS */
+        /* --- TELA DE BOAS VINDAS --- */
         .welcome-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -148,6 +149,7 @@
             cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-transform: uppercase; letter-spacing: 1px;
         }
         .btn-entrar:active { transform: scale(0.95); }
+        /* --------------------------- */
 
         header {
             background: var(--bg-card); padding: 16px 20px; display: flex; justify-content: space-between;
@@ -217,7 +219,8 @@
         .btn:active { transform: scale(0.98); }
         .btn-secondary { background: var(--secondary); box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2); }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); box-shadow: none; }
-        .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; }
+        .btn-qr { background: linear-gradient(135deg, #6C63FF, #8A85FF); box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25); color: white; }
+        .btn-sm { padding: 8px 12px; font-size: 12px; width: auto; }
 
         .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .badge-urgent { background: var(--danger-light); color: var(--danger); }
@@ -246,12 +249,35 @@
         .progress-container { width: 100%; background: var(--gray-light); border-radius: 10px; height: 8px; overflow: hidden; margin: 6px 0; }
         .progress-bar { height: 100%; background: var(--success); border-radius: 10px; transition: width 0.5s ease; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
-        .modal-content { background: var(--bg-card); color: var(--text-color); border-radius: var(--radius); width: 100%; max-width: 420px; padding: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-card); color: var(--text-color); border-radius: var(--radius); width: 100%; max-width: 440px; padding: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
         .modal-title { font-size: 16px; font-weight: 700; }
         .empty-state { text-align: center; padding: 24px 16px; color: var(--gray); font-size: 13px; }
         .cofrinho-alert { background: var(--warning-light); border: 1px solid var(--warning); color: #856404; padding: 10px 14px; border-radius: 10px; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+
+        /* Custom Scanner Box */
+        #qrReaderBox {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #000;
+            border: 2px dashed var(--secondary);
+            min-height: 250px;
+        }
+        #qrReaderBox video {
+            object-fit: cover !important;
+            border-radius: 12px;
+        }
+        .scanned-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .scanned-item-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -265,6 +291,7 @@
             <button class="btn-entrar" onclick="entrarApp()">Entrar</button>
         </div>
     </div>
+    <!-- FIM TELA DE BOAS VINDAS -->
 
     <header>
         <div class="app-brand">
@@ -342,16 +369,16 @@
             </div>
         </section>
 
-        <!-- ABA 2: CASA -->
+        <!-- ABA 2: CASA COM LEITOR DE QR CODE -->
         <section id="tab-casa" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Itens & Necessidades</h2>
                 <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary btn-sm" onclick="abrirScannerQR()">
-                        <i class="fa-solid fa-qrcode"></i> Ler QR
+                    <button class="btn btn-qr btn-sm" onclick="abrirModalScannerQR()" title="Ler cupom ou lista via QR Code">
+                        <i class="fa-solid fa-qrcode"></i> Ler QR Code
                     </button>
                     <button class="btn btn-sm" onclick="openModalItemCasa()">
-                        <i class="fa-solid fa-plus"></i> Novo Item
+                        <i class="fa-solid fa-plus"></i> Novo
                     </button>
                 </div>
             </div>
@@ -421,12 +448,6 @@
                     <input type="text" id="inputNomeP2" value="Thayna" onchange="atualizarNomeP2(this.value)">
                 </div>
                 <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Backup JSON</button>
-                
-                <input type="file" id="fileImportar" accept=".json" style="display: none;" onchange="importarBackup(event)">
-                <button class="btn btn-outline" style="margin-top: 8px;" onclick="document.getElementById('fileImportar').click()">
-                    <i class="fa-solid fa-upload"></i> Restaurar Backup JSON
-                </button>
-
                 <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Geral (App e Nuvem)</button>
             </div>
         </section>
@@ -452,22 +473,64 @@
         </button>
     </nav>
 
-    <!-- MODAL SCANNER QR CODE -->
+    <!-- MODAIS -->
+
+    <!-- Modal Leitor de QR Code -->
     <div class="modal-overlay" id="modalScannerQR">
-        <div class="modal-content" style="text-align: center;">
+        <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-qrcode"></i> Escanear Item</div>
-                <button class="icon-btn" onclick="fecharScannerQR()"><i class="fa-solid fa-xmark"></i></button>
+                <div class="modal-title"><i class="fa-solid fa-qrcode" style="color: var(--secondary);"></i> Ler QR Code / Cupom</div>
+                <button class="icon-btn" onclick="fecharModalScannerQR()"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            
             <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
-                Aponte a câmera para o QR Code contendo os dados do item.
+                Aponte a câmera para o QR Code da nota fiscal ou selecione uma foto salva no aparelho:
             </p>
-            <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000; min-height: 250px;"></div>
-            <button class="btn btn-outline" style="margin-top: 14px;" onclick="fecharScannerQR()">Cancelar</button>
+
+            <div id="qrReaderBox"></div>
+
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <label class="btn btn-outline btn-sm" style="width: 100%; cursor: pointer;">
+                    <i class="fa-solid fa-image"></i> Escolher Imagem do QR Code
+                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="lerArquivoImagemQR(event)">
+                </label>
+                <button class="btn btn-secondary btn-sm" onclick="alternarCamera()">
+                    <i class="fa-solid fa-camera-rotate"></i> Alternar Câmera
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL ITEM CASA -->
+    <!-- Modal Revisão dos Itens Escaneados -->
+    <div class="modal-overlay" id="modalRevisaoQR">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-clipboard-check" style="color: var(--success);"></i> Itens Reconhecidos</div>
+                <button class="icon-btn" onclick="closeModal('modalRevisaoQR')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div style="background: var(--light); padding: 10px; border-radius: 10px; margin-bottom: 12px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Produtos Detectados:</span>
+                    <b id="lblQtdDetectada">0</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <span>Total da Compra:</span>
+                    <b id="lblTotalDetectado" style="color: var(--primary);">R$ 0,00</b>
+                </div>
+            </div>
+
+            <div style="max-height: 280px; overflow-y: auto; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px;" id="scannedItemsListPreview">
+                <!-- Itens preenchidos dinamicamente -->
+            </div>
+
+            <button class="btn" onclick="confirmarImportacaoItensQR()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Importar Todos para Casa
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Item Casa (Permite Edição) -->
     <div class="modal-overlay" id="modalItemCasa">
         <div class="modal-content">
             <div class="modal-header">
@@ -476,7 +539,7 @@
             </div>
             <div class="form-group">
                 <label>Nome do Item / Compra</label>
-                <input type="text" id="itemNome" placeholder="Ex: Panela, Compra Mercado...">
+                <input type="text" id="itemNome" placeholder="Ex: Compra Mercado Semanal, Panela...">
             </div>
             <div class="form-group">
                 <label>Categoria</label>
@@ -507,11 +570,11 @@
         </div>
     </div>
 
-    <!-- MODAL CONTA -->
+    <!-- Modal Conta -->
     <div class="modal-overlay" id="modalConta">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="modalContaTitle">Cadastrar Conta / Boleto</div>
+                <div class="modal-title">Cadastrar Conta / Boleto</div>
                 <button class="icon-btn" onclick="closeModal('modalConta')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="form-group">
@@ -553,7 +616,7 @@
         </div>
     </div>
 
-    <!-- MODAL RENDAS -->
+    <!-- Modal Rendas -->
     <div class="modal-overlay" id="modalRenda">
         <div class="modal-content">
             <div class="modal-header">
@@ -597,7 +660,7 @@
         </div>
     </div>
 
-    <!-- MODAL ORÇAMENTO -->
+    <!-- Modal Orçamento -->
     <div class="modal-overlay" id="modalOrcamento">
         <div class="modal-content">
             <div class="modal-header">
@@ -613,7 +676,7 @@
         </div>
     </div>
 
-    <!-- MODAL METAS -->
+    <!-- Modal Metas -->
     <div class="modal-overlay" id="modalObjetivo">
         <div class="modal-content">
             <div class="modal-header">
@@ -627,6 +690,7 @@
         </div>
     </div>
 
+    <!-- Firebase App Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -647,7 +711,7 @@
         window.dbRef = db;
         window.docRef = doc(db, "dados", "app_casal");
 
-        window.defaultAppData = {
+        window.appData = {
             nomeP1: 'Jhonatan',
             nomeP2: 'Thayna',
             darkMode: false,
@@ -660,26 +724,18 @@
             atividades: []
         };
 
-        window.appData = { ...window.defaultAppData };
-
         window.salvarDados = async function() {
-            try { 
-                await setDoc(window.docRef, window.appData); 
-            } catch (e) { 
-                console.error("Erro Firebase:", e); 
-            }
+            try { await setDoc(window.docRef, window.appData); } catch (e) { console.error("Erro Firebase:", e); }
             localStorage.setItem('app_casal_data_v1', JSON.stringify(window.appData));
             window.atualizarInterface();
         };
 
         onSnapshot(window.docRef, (docSnap) => {
             if (docSnap.exists() && docSnap.data().nomeP1) {
-                window.appData = { ...window.defaultAppData, ...docSnap.data() };
+                window.appData = docSnap.data();
             } else {
                 const saved = localStorage.getItem('app_casal_data_v1');
-                if (saved) { 
-                    try { window.appData = { ...window.defaultAppData, ...JSON.parse(saved) }; } catch(e) {} 
-                }
+                if (saved) { try { window.appData = JSON.parse(saved); } catch(e) {} }
                 window.salvarDados();
             }
             sincronizarConfigNomes();
@@ -688,36 +744,26 @@
         });
 
         function sincronizarConfigNomes() {
-            const p1 = document.getElementById('inputNomeP1');
-            const p2 = document.getElementById('inputNomeP2');
-
-            if (p1 && document.activeElement !== p1) {
-                p1.value = window.appData.nomeP1 || 'Jhonatan';
+            if(document.getElementById('inputNomeP1')) {
+                document.getElementById('inputNomeP1').value = window.appData.nomeP1 || 'Jhonatan';
+                document.getElementById('inputNomeP2').value = window.appData.nomeP2 || 'Thayna';
+                document.getElementById('lblRendaP1_05').innerText = window.appData.nomeP1 || 'Jhonatan';
+                document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1 || 'Jhonatan';
+                document.getElementById('lblRendaP2_05').innerText = window.appData.nomeP2 || 'Thayna';
+                document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2 || 'Thayna';
             }
-            if (p2 && document.activeElement !== p2) {
-                p2.value = window.appData.nomeP2 || 'Thayna';
-            }
-
-            const n1 = window.appData.nomeP1 || 'Jhonatan';
-            const n2 = window.appData.nomeP2 || 'Thayna';
-
-            ['lblRendaP1_05', 'lblRendaP1_20'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerText = n1;
-            });
-            ['lblRendaP2_05', 'lblRendaP2_20'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerText = n2;
-            });
         }
     </script>
 
     <script>
+        // --- VARIÁVEIS PARA RASTREAR EDIÇÃO E SCANNER ---
         let editMetaId = null;
         let editItemCasaId = null;
-        let editContaId = null;
-        let html5QrCode = null;
+        let html5QrScanner = null;
+        let scannerCameraFacing = "environment";
+        let itensDetectadosTemp = [];
 
+        // --- TELA DE BOAS VINDAS & FOGOS ---
         window.entrarApp = function() {
             let ws = document.getElementById('welcomeScreen');
             ws.style.opacity = '0';
@@ -788,9 +834,7 @@
             if (appData.mesReferencia !== mesAtualReal) {
                 const fin = calcularFinancas(); 
                 let sobraDoMesPassado = fin.sobraEstimada > 0 ? fin.sobraEstimada : 0;
-                if (sobraDoMesPassado > 0) { 
-                    appData.renda.extra = (parseFloat(appData.renda.extra) || 0) + sobraDoMesPassado; 
-                }
+                if (sobraDoMesPassado > 0) { appData.renda.extra = (parseFloat(appData.renda.extra) || 0) + sobraDoMesPassado; }
                 appData.contas = appData.contas.filter(c => c.status === 'pendente' || c.recorrente);
                 appData.contas.forEach(c => {
                     if (c.recorrente) {
@@ -806,7 +850,6 @@
                 appData.mesReferencia = mesAtualReal;
                 registrarAtividade(`🔄 Mês virou! Sobra de ${formatarMoeda(sobraDoMesPassado)} repassada.`);
                 salvarDados();
-                alert(`O mês virou! 📅\n\n• Seus salários bases foram mantidos.\n• A sobra de ${formatarMoeda(sobraDoMesPassado)} foi adicionada à sua Renda Extra!\n• Suas Contas Fixas foram renovadas.`);
             }
         }
 
@@ -854,86 +897,217 @@
             renderizarAtividades();
         };
 
-        // --- SCANNER QR CODE ---
-        window.abrirScannerQR = function() {
-            openModal('modalScannerQR');
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("qr-reader");
-            }
-            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                onScanSuccess,
-                () => {}
-            ).catch(err => {
-                alert("Não foi possível acessar a câmera. Verifique se o site está rodando em HTTPS ou Localhost.");
-                fecharScannerQR();
-            });
-        };
+        // --- SCANNER DE QR CODE INTELIGENTE ---
+        function deduzirCategoria(nome) {
+            const n = nome.toUpperCase();
+            if (n.includes('SBT') || n.includes('SABONETE') || n.includes('SH') || n.includes('SHAMPOO') || n.includes('CR COLG') || n.includes('DENTAL') || n.includes('P H FAM') || n.includes('HIGI')) return 'Banheiro';
+            if (n.includes('DET') || n.includes('YPE') || n.includes('D PATO') || n.includes('TOALHA YURI') || n.includes('ALCOOL') || n.includes('COPERALC') || n.includes('LAVAN')) return 'Lavanderia';
+            if (n.includes('PAO') || n.includes('PANCO') || n.includes('TAPIOCA') || n.includes('PRATO') || n.includes('PANELA') || n.includes('COZ')) return 'Cozinha';
+            if (n.includes('GATORADE') || n.includes('TRENTO') || n.includes('ROSQ') || n.includes('LAZER') || n.includes('JOGO')) return 'Lazer';
+            if (n.includes('CABO') || n.includes('USB') || n.includes('FONE') || n.includes('MOUSE')) return 'Tecnologia';
+            return 'Mercado';
+        }
 
-        window.fecharScannerQR = function() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                    closeModal('modalScannerQR');
-                }).catch(() => {
-                    closeModal('modalScannerQR');
-                });
-            } else {
-                closeModal('modalScannerQR');
-            }
-        };
+        function parseQrText(rawText) {
+            let items = [];
+            let lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        function onScanSuccess(decodedText) {
-            fecharScannerQR();
-            try {
-                let itemNome = "";
-                let itemQtd = 1;
-                let itemPreco = 0;
-                let itemCategoria = "Mercado";
+            // Formato 1: Estrutura padrão de blocos da nota (Nome + Código / Qtde.: X UN: Y Vl. Unit: Z Vl. Total W)
+            let i = 0;
+            while (i < lines.length) {
+                let line = lines[i];
+                let regexQtde = /Qtde\.?:\s*([0-9.,]+).*?Vl\.?\s*Unit\.?:\s*([0-9.,]+)/i;
+                
+                if (regexQtde.test(line)) {
+                    let nome = (i > 0) ? lines[i - 1].replace(/\(Código.*?\)/i, '').trim() : "Item Desconhecido";
+                    let match = line.match(regexQtde);
+                    let qtd = parseFloat(match[1].replace(',', '.')) || 1;
+                    let vlUnit = parseFloat(match[2].replace(',', '.')) || 0;
+                    
+                    let vlTotal = (qtd * vlUnit);
+                    if (i + 1 < lines.length && /^[0-9.,]+$/.test(lines[i + 1])) {
+                        let parsedTotal = parseFloat(lines[i + 1].replace(',', '.'));
+                        if (!isNaN(parsedTotal) && parsedTotal > 0) {
+                            vlTotal = parsedTotal;
+                        }
+                    }
 
-                // Formato 1: JSON {"nome":"Arroz","qtd":2,"preco":25.5,"categoria":"Mercado"}
-                if (decodedText.trim().startsWith('{')) {
-                    const data = JSON.parse(decodedText);
-                    itemNome = data.nome || "Item Escaneado";
-                    itemQtd = parseInt(data.qtd) || 1;
-                    itemPreco = parseFloat(data.preco) || 0;
-                    if (data.categoria) itemCategoria = data.categoria;
-                } 
-                // Formato 2: Delimitado por ponto e vírgula: "Nome;Qtd;Preco;Categoria"
-                else if (decodedText.includes(';')) {
-                    const partes = decodedText.split(';');
-                    itemNome = partes[0]?.trim() || "Item Escaneado";
-                    itemQtd = parseInt(partes[1]) || 1;
-                    itemPreco = parseFloat(partes[2]) || 0;
-                    if (partes[3]) itemCategoria = partes[3].trim();
-                } 
-                // Formato 3: Texto Simples
-                else {
-                    itemNome = decodedText;
+                    items.push({
+                        nome: nome,
+                        quantidade: qtd,
+                        valorTotal: vlTotal,
+                        categoria: deduzirCategoria(nome)
+                    });
+                } else if (/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i.test(line)) {
+                    // Formato 2: Lista consolidada rápida (Ex: 16x TRENTO 29G - R$ 39,84)
+                    let m = line.match(/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i);
+                    let qtd = parseInt(m[1]) || 1;
+                    let nome = m[2].trim();
+                    let vlTotal = parseFloat(m[3].replace(',', '.')) || 0;
+                    items.push({
+                        nome: nome,
+                        quantidade: qtd,
+                        valorTotal: vlTotal,
+                        categoria: deduzirCategoria(nome)
+                    });
                 }
+                i++;
+            }
 
-                const valorFinal = (itemPreco * itemQtd);
-                const nomeFormatado = itemQtd > 1 ? `${itemNome} (x${itemQtd})` : itemNome;
+            // Agrupa itens repetidos caso o cupom tenha registrado linhas avulsas (Ex: 8x Del Valle)
+            let mapa = new Map();
+            items.forEach(it => {
+                let key = it.nome.toUpperCase();
+                if (mapa.has(key)) {
+                    let existing = mapa.get(key);
+                    existing.quantidade += it.quantidade;
+                    existing.valorTotal += it.valorTotal;
+                } else {
+                    mapa.set(key, { ...it });
+                }
+            });
 
-                appData.itensCasa.unshift({
-                    id: Date.now(),
-                    nome: nomeFormatado,
-                    categoria: itemCategoria,
-                    status: 'Comprado',
-                    valorReal: valorFinal
-                });
+            return Array.from(mapa.values());
+        }
 
-                registrarAtividade(`Scan QR: ${nomeFormatado} — ${formatarMoeda(valorFinal)}`);
-                salvarDados();
-                confetti({ particleCount: 35, spread: 60, origin: { y: 0.7 } });
-            } catch (e) {
-                alert("O QR Code lido não possui um formato reconhecido.");
+        window.abrirModalScannerQR = function() {
+            openModal('modalScannerQR');
+            iniciarScannerCamera();
+        };
+
+        window.fecharModalScannerQR = function() {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+        };
+
+        function iniciarScannerCamera() {
+            if (html5QrScanner) {
+                try { html5QrScanner.stop(); } catch(e) {}
+            }
+            html5QrScanner = new Html5Qrcode("qrReaderBox");
+            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+            html5QrScanner.start(
+                { facingMode: scannerCameraFacing },
+                config,
+                onQrCodeDetectado,
+                onQrCodeErro
+            ).catch(err => {
+                console.warn("Câmera não iniciada diretamente:", err);
+            });
+        }
+
+        function pararScannerCamera() {
+            if (html5QrScanner) {
+                try {
+                    html5QrScanner.stop().then(() => { html5QrScanner.clear(); });
+                } catch(e) {}
             }
         }
 
-        // --- ABA CASA ---
+        window.alternarCamera = function() {
+            scannerCameraFacing = (scannerCameraFacing === "environment") ? "user" : "environment";
+            iniciarScannerCamera();
+        };
+
+        window.lerArquivoImagemQR = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new Html5Qrcode("qrReaderBox");
+            reader.scanFile(file, true)
+                .then(decodedText => {
+                    onQrCodeDetectado(decodedText);
+                })
+                .catch(err => {
+                    alert("Não foi possível detectar um QR Code legível na imagem. Tente uma foto mais nítida.");
+                });
+        };
+
+        function onQrCodeDetectado(decodedText) {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+
+            let itens = parseQrText(decodedText);
+            
+            // Caso o QR code seja uma chave ou texto compacto, tenta identificar ou cria registro único
+            if (itens.length === 0) {
+                let possivelValor = decodedText.match(/([0-9]+[.,][0-9]{2})/);
+                let valorIdentificado = possivelValor ? parseFloat(possivelValor[1].replace(',', '.')) : 0;
+                itens = [{
+                    nome: "Compra via Cupom Fiscal",
+                    quantidade: 1,
+                    valorTotal: valorIdentificado > 0 ? valorIdentificado : 0,
+                    categoria: "Mercado"
+                }];
+            }
+
+            itensDetectadosTemp = itens;
+            exibirRevisaoItens(itens);
+        }
+
+        function onQrCodeErro(errorMessage) {
+            // Callback contínuo enquanto o scanner busca o QR Code no frame
+        }
+
+        function exibirRevisaoItens(itens) {
+            let container = document.getElementById('scannedItemsListPreview');
+            container.innerHTML = '';
+            
+            let totalGeral = 0;
+            let totalQtd = 0;
+
+            itens.forEach(item => {
+                totalGeral += item.valorTotal;
+                totalQtd += item.quantidade;
+
+                let row = document.createElement('div');
+                row.className = 'scanned-item-row';
+                row.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-color);">${item.quantidade}x ${item.nome}</div>
+                        <span style="color: var(--gray); font-size: 11px;"><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-weight: 700; color: var(--text-color);">${formatarMoeda(item.valorTotal)}</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('lblQtdDetectada').innerText = `${itens.length} SKUs (${totalQtd} un)`;
+            document.getElementById('lblTotalDetectado').innerText = formatarMoeda(totalGeral);
+            openModal('modalRevisaoQR');
+        }
+
+        window.confirmarImportacaoItensQR = function() {
+            if (!itensDetectadosTemp || itensDetectadosTemp.length === 0) {
+                closeModal('modalRevisaoQR');
+                return;
+            }
+
+            let totalImportado = 0;
+            let agora = Date.now();
+
+            itensDetectadosTemp.forEach((it, index) => {
+                totalImportado += it.valorTotal;
+                appData.itensCasa.unshift({
+                    id: agora + index,
+                    nome: `${it.quantidade > 1 ? it.quantidade + 'x ' : ''}${it.nome}`,
+                    categoria: it.categoria,
+                    status: 'Comprado',
+                    valorReal: parseFloat(it.valorTotal.toFixed(2)) // Grava o valor total somado do item
+                });
+            });
+
+            registrarAtividade(`QR Code: ${itensDetectadosTemp.length} itens importados — ${formatarMoeda(totalImportado)}`);
+            salvarDados();
+            closeModal('modalRevisaoQR');
+
+            // Feedback festivo
+            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+        };
+
+        // --- CASA (CRIAR E EDITAR) ---
         let filtroCasaAtual = 'todos';
         window.filterCasa = function(cat, el) { 
             filtroCasaAtual = cat; 
@@ -1031,7 +1205,7 @@
             salvarDados(); 
         };
 
-        // --- ABA CONTAS ---
+        // --- CONTAS ---
         function renderizarContas() {
             let container = document.getElementById('financasContasContainer'); 
             container.innerHTML = '';
@@ -1043,52 +1217,10 @@
                 let fixaBadge = c.recorrente ? `<span title="Conta Fixa" style="color: var(--info); margin-left: 5px;"><i class="fa-solid fa-rotate"></i></span>` : '';
                 let card = document.createElement('div'); 
                 card.className = 'list-card';
-                card.innerHTML = `
-                    <div class="list-card-header">
-                        <div>
-                            <span class="badge ${c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending'}">${c.status.toUpperCase()}</span>
-                            <div class="list-card-title" style="margin-top: 4px;">${c.nome} ${fixaBadge}</div>
-                        </div>
-                        <div style="font-weight: 700;">${formatarMoeda(c.valor)}</div>
-                    </div>
-                    <div class="list-card-details">
-                        <span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span>
-                        <div class="action-icon-group">
-                            <button class="icon-btn check" onclick="alternarConta(${c.id})"><i class="fa-solid fa-check"></i></button>
-                            <button class="icon-btn edit" onclick="editarConta(${c.id})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="icon-btn delete" onclick="excluirConta(${c.id})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                `;
+                card.innerHTML = `<div class="list-card-header"><div><span class="badge ${c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending'}">${c.status.toUpperCase()}</span><div class="list-card-title" style="margin-top: 4px;">${c.nome} ${fixaBadge}</div></div><div style="font-weight: 700;">${formatarMoeda(c.valor)}</div></div><div class="list-card-details"><span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span><div class="action-icon-group"><button class="icon-btn check" onclick="alternarConta(${c.id})"><i class="fa-solid fa-check"></i></button><button class="icon-btn delete" onclick="excluirConta(${c.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
                 container.appendChild(card);
             });
         }
-
-        window.openModalConta = function() {
-            editContaId = null;
-            document.getElementById('modalContaTitle').innerText = "Cadastrar Conta / Boleto";
-            document.getElementById('contaNome').value = '';
-            document.getElementById('contaCategoria').value = 'Casa';
-            document.getElementById('contaValor').value = '';
-            document.getElementById('contaVencimento').value = '';
-            document.getElementById('contaStatus').value = 'pendente';
-            document.getElementById('contaRecorrente').checked = true;
-            openModal('modalConta');
-        };
-
-        window.editarConta = function(id) {
-            let c = appData.contas.find(x => x.id === id);
-            if (!c) return;
-            editContaId = id;
-            document.getElementById('modalContaTitle').innerText = "Editar Conta / Boleto";
-            document.getElementById('contaNome').value = c.nome;
-            document.getElementById('contaCategoria').value = c.categoria || 'Casa';
-            document.getElementById('contaValor').value = c.valor;
-            document.getElementById('contaVencimento').value = c.vencimento || '';
-            document.getElementById('contaStatus').value = c.status;
-            document.getElementById('contaRecorrente').checked = !!c.recorrente;
-            openModal('modalConta');
-        };
 
         window.salvarConta = function() {
             let nome = document.getElementById('contaNome').value; 
@@ -1102,20 +1234,12 @@
                 alert('Informe a descrição e o valor.'); 
                 return; 
             }
-
-            if (editContaId !== null) {
-                let index = appData.contas.findIndex(x => x.id === editContaId);
-                if (index !== -1) {
-                    appData.contas[index] = { ...appData.contas[index], nome, categoria, valor, vencimento, status, recorrente };
-                    registrarAtividade(`Edição de Conta: ${nome} — ${formatarMoeda(valor)}`);
-                }
-            } else {
-                appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status, recorrente }); 
-                registrarAtividade(`Conta: ${nome} — ${formatarMoeda(valor)}`);
-            }
-
+            appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status, recorrente }); 
+            registrarAtividade(`Conta: ${nome} — ${formatarMoeda(valor)}`);
             salvarDados(); 
-            closeModal('modalConta');
+            closeModal('modalConta'); 
+            document.getElementById('contaNome').value = ''; 
+            document.getElementById('contaValor').value = '';
         };
 
         window.alternarConta = function(id) { 
@@ -1131,7 +1255,7 @@
             salvarDados(); 
         };
 
-        // --- ABA ORÇAMENTO E RENDA ---
+        // --- ORÇAMENTO E RENDA ---
         function renderizarOrcamento() {
             let container = document.getElementById('financasOrcamentoContainer'); 
             container.innerHTML = '';
@@ -1145,19 +1269,7 @@
                 let estourou = sobra < 0;
                 let card = document.createElement('div'); 
                 card.className = 'list-card';
-                card.innerHTML = `
-                    <div class="list-card-header">
-                        <div class="list-card-title">${cat}</div>
-                        <div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}</div>
-                    </div>
-                    <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;">
-                        <span>Teto: ${formatarMoeda(planejado)}</span>
-                        <span>Real: ${formatarMoeda(totalGasto)}</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${Math.min((totalGasto / (planejado || 1)) * 100, 100)}%; background: ${estourou ? 'var(--danger)' : 'var(--success)'};"></div>
-                    </div>
-                `;
+                card.innerHTML = `<div class="list-card-header"><div class="list-card-title">${cat}</div><div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}</div></div><div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;"><span>Teto: ${formatarMoeda(planejado)}</span><span>Real: ${formatarMoeda(totalGasto)}</span></div><div class="progress-container"><div class="progress-bar" style="width: ${Math.min((totalGasto / (planejado || 1)) * 100, 100)}%; background: ${estourou ? 'var(--danger)' : 'var(--success)'};"></div></div>`;
                 container.appendChild(card);
             });
         }
@@ -1182,7 +1294,7 @@
             closeModal('modalRenda'); 
         };
 
-        // --- ABA METAS ---
+        // --- METAS ---
         function renderizarObjetivos() {
             let container = document.getElementById('objetivosContainer'); 
             container.innerHTML = '';
@@ -1255,34 +1367,13 @@
             salvarDados(); 
         };
 
-        // --- SISTEMA E AUXILIARES ---
+        // --- GERAIS ---
         window.resetarDados = async function() { 
-            if (confirm('Tem certeza? Isso apagará os dados do navegador e resetará o Firebase.')) { 
+            if (confirm('Tem certeza? Isso apagará os dados do navegador e da nuvem Firebase.')) { 
                 localStorage.removeItem('app_casal_data_v1'); 
-                try { 
-                    await setDoc(window.docRef, window.defaultAppData); 
-                } catch(e) {} 
+                try { await setDoc(window.docRef, {}); } catch(e) {} 
                 location.reload(); 
             } 
-        };
-
-        window.importarBackup = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const dadosImportados = JSON.parse(e.target.result);
-                    if (dadosImportados && typeof dadosImportados === 'object') {
-                        window.appData = { ...window.defaultAppData, ...dadosImportados };
-                        await window.salvarDados();
-                        alert('Backup restaurado com sucesso!');
-                    }
-                } catch (err) {
-                    alert('Arquivo JSON inválido.');
-                }
-            };
-            reader.readAsText(file);
         };
 
         function registrarAtividade(texto) { 
@@ -1315,6 +1406,7 @@
 
         window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
         window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
+        window.openModalConta = function() { openModal('modalConta'); };
         
         window.openModalRenda = function() { 
             document.getElementById('rendaP1_20').value = appData.renda.p1_20 || ''; 
