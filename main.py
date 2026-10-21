@@ -46,7 +46,6 @@ async def consultar_nfe(dados: QrRequest):
     
     try:
         async with async_playwright() as p:
-            # Flags vitais para correr o Chromium no Linux sem GUI e sem privilégios de root
             browser = await p.chromium.launch(
                 headless=True,
                 args=[
@@ -60,52 +59,88 @@ async def consultar_nfe(dados: QrRequest):
                 ]
             )
             
-            # Simula um navegador real móvel para contornar verificações do portal fiscal
             context = await browser.new_context(
-                user_agent="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             )
             page = await context.new_page()
 
             try:
-                # Abre a página da SEFAZ
-                await page.goto(url, wait_until="domcontentloaded", timeout=25000)
+                # Carrega a página da SEFAZ
+                await page.goto(url, wait_until="networkidle", timeout=30000)
 
-                # Se houver botão/aba para expandir itens (comum no portal SP)
-                btn_itens = page.locator("text=Itens")
-                if await btn_itens.count() > 0:
+                # Clica em botões comuns de expandir itens na SEFAZ SP se existirem
+                for seletor_btn in ["text=Visualizar Itens", "text=Itens", "#btnItens", ".btn-itens", "text=Produtos"]:
                     try:
-                        await btn_itens.first.click(timeout=3000)
-                        await page.wait_for_timeout(1000)
+                        btn = page.locator(seletor_btn)
+                        if await btn.count() > 0:
+                            await btn.first.click(timeout=2000)
+                            await page.wait_for_timeout(1000)
+                            break
                     except Exception:
                         pass
 
-                # Procura por linhas de produtos na página
-                linhas = await page.locator("tr[id^='Item'], tr.item, table.tabItens tr, .ui-grid-row, .box, tr").all()
+                # Pega todo o texto da tabela de resultados ou do corpo da página
+                conteudo_texto = await page.inner_text("body")
 
-                for linha in linhas:
-                    texto = await linha.inner_text()
-                    if not texto or ("Código" not in texto and "Qtde" not in texto):
-                        continue
+                # Padrão de extração por blocos de texto (exato do layout SEFAZ-SP)
+                linhas = [l.strip() for l in conteudo_texto.split("\n") if l.strip()]
+                
+                i = 0
+                while i < len(linhas):
+                    linha = linhas[i]
+                    
+                    # Procura linhas com "Qtde.:" ou "Quantidade:"
+                    match_qtd = re.search(r"Qtde\.?:\s*([\d,\.]+)", linha, re.IGNORECASE)
+                    match_unit = re.search(r"Vl\.\s*Unit\.?:\s*([\d,\.]+)", linha, re.IGNORECASE)
+                    
+                    if match_qtd:
+                        nome = linhas[i - 1] if i > 0 else "Produto"
+                        nome = re.sub(r"\(Código.*?\)", "", nome).strip()
+                        
+                        qtd_val = float(match_qtd.group(1).replace(",", "."))
+                        
+                        # Tenta pegar valor total na linha atual ou na próxima
+                        match_tot = re.search(r"Vl\.\s*Total[\s:]*([\d,\.]+)", linha, re.IGNORECASE)
+                        if match_tot:
+                            vl_total = float(match_tot.group(1).replace(".", "").replace(",", "."))
+                        elif i + 1 < len(linhas) and re.match(r"^[\d,\.]+$", linhas[i + 1]):
+                            vl_total = float(linhas[i + 1].replace(".", "").replace(",", "."))
+                        elif match_unit:
+                            vl_unit = float(match_unit.group(1).replace(".", "").replace(",", "."))
+                            vl_total = qtd_val * vl_unit
+                        else:
+                            vl_total = 0.0
 
-                    nome_match = re.search(r"^(.*?)(?:\(Código|\n|Qtde)", texto, re.MULTILINE)
-                    qtd_match = re.search(r"Qtde\.?:\s*([\d,\.]+)", texto, re.IGNORECASE)
-                    vl_total_match = re.search(r"(?:Vl\.\s*Total|Total)[\s:]*R?\$?\s*([\d,\.]+)", texto, re.IGNORECASE)
+                        if vl_total > 0:
+                            itens.append({
+                                "nome": nome,
+                                "quantidade": int(qtd_val) if qtd_val.is_integer() else qtd_val,
+                                "valorReal": round(vl_total, 2),
+                                "categoria": categorizar_item(nome),
+                                "status": "Comprado"
+                            })
+                    i += 1
 
-                    if nome_match and vl_total_match:
-                        nome = nome_match.group(1).strip()
-                        qtd_str = qtd_match.group(1).replace(",", ".") if qtd_match else "1"
-                        total_str = vl_total_match.group(1).replace(".", "").replace(",", ".")
+                # Se a busca por texto não achar, tenta tabela direta
+                if not itens:
+                    tabela_linhas = await page.locator("#tabResult tr, table.tabItens tr, tr[id^='Item']").all()
+                    for tr in tabela_linhas:
+                        t = await tr.inner_text()
+                        m_qtd = re.search(r"Qtde\.?:\s*([\d,\.]+)", t, re.IGNORECASE)
+                        m_tot = re.search(r"Total[\s:]*([\d,\.]+)", t, re.IGNORECASE)
+                        m_nome = re.search(r"^(.*?)(?:\(Código|\n|Qtde)", t)
+                        if m_qtd and m_tot:
+                            q = float(m_qtd.group(1).replace(",", "."))
+                            v = float(m_tot.group(1).replace(".", "").replace(",", "."))
+                            n = m_nome.group(1).strip() if m_nome else "Produto"
+                            itens.append({
+                                "nome": n,
+                                "quantidade": int(q) if q.is_integer() else q,
+                                "valorReal": round(v, 2),
+                                "categoria": categorizar_item(n),
+                                "status": "Comprado"
+                            })
 
-                        qtd = float(qtd_str)
-                        vl_total = float(total_str)
-
-                        itens.append({
-                            "nome": nome,
-                            "quantidade": int(qtd) if qtd.is_integer() else qtd,
-                            "valorReal": round(vl_total, 2),
-                            "categoria": categorizar_item(nome),
-                            "status": "Comprado"
-                        })
             finally:
                 await browser.close()
 
