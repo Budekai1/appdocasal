@@ -149,7 +149,6 @@
             cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-transform: uppercase; letter-spacing: 1px;
         }
         .btn-entrar:active { transform: scale(0.95); }
-        /* --------------------------- */
 
         header {
             background: var(--bg-card); padding: 16px 20px; display: flex; justify-content: space-between;
@@ -256,7 +255,6 @@
         .empty-state { text-align: center; padding: 24px 16px; color: var(--gray); font-size: 13px; }
         .cofrinho-alert { background: var(--warning-light); border: 1px solid var(--warning); color: #856404; padding: 10px 14px; border-radius: 10px; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
 
-        /* Custom Scanner Box */
         #qrReaderBox {
             width: 100%;
             border-radius: 14px;
@@ -291,7 +289,6 @@
             <button class="btn-entrar" onclick="entrarApp()">Entrar</button>
         </div>
     </div>
-    <!-- FIM TELA DE BOAS VINDAS -->
 
     <header>
         <div class="app-brand">
@@ -447,6 +444,11 @@
                     <label>Nome do Parceiro 2</label>
                     <input type="text" id="inputNomeP2" value="Thayna" onchange="atualizarNomeP2(this.value)">
                 </div>
+                <div class="form-group">
+                    <label>URL da API Python (Render/ngrok)</label>
+                    <input type="text" id="inputApiPythonUrl" placeholder="https://sua-api.onrender.com" onchange="salvarConfigApi(this.value)">
+                    <span style="font-size: 10px; color: var(--gray);">Deixe em branco para usar a rota padrão configurada.</span>
+                </div>
                 <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Backup JSON</button>
                 <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Geral (App e Nuvem)</button>
             </div>
@@ -484,20 +486,40 @@
             </div>
             
             <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
-                Aponte a câmera para o QR Code da nota fiscal ou selecione uma foto salva no aparelho:
+                Aponte para o QR Code da nota fiscal ou para um código gerado na tela:
             </p>
 
             <div id="qrReaderBox"></div>
 
             <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
                 <label class="btn btn-outline btn-sm" style="width: 100%; cursor: pointer;">
-                    <i class="fa-solid fa-image"></i> Escolher Imagem do QR Code
+                    <i class="fa-solid fa-image"></i> Escolher Foto do QR Code
                     <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="lerArquivoImagemQR(event)">
                 </label>
                 <button class="btn btn-secondary btn-sm" onclick="alternarCamera()">
                     <i class="fa-solid fa-camera-rotate"></i> Alternar Câmera
                 </button>
+                <button class="btn btn-outline btn-sm" style="border-color: var(--secondary); color: var(--secondary);" onclick="abrirModalColarTexto()">
+                    <i class="fa-solid fa-paste"></i> Colar Texto Copiado da Fazenda
+                </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Colar Texto Manual -->
+    <div class="modal-overlay" id="modalColarTexto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-paste" style="color: var(--secondary);"></i> Colar Lista da Fazenda</div>
+                <button class="icon-btn" onclick="closeModal('modalColarTexto')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">
+                Cole aqui as linhas com nomes, quantidades e valores copiados do portal da SEFAZ:
+            </p>
+            <textarea id="txtManualFazenda" rows="8" placeholder="BAT PALHA YOKI 105G (Código: 1136513)&#10;Qtde.:2   UN: Un   Vl. Unit.:   5,99&#10;11,98..."></textarea>
+            <button class="btn" style="margin-top: 10px;" onclick="processarTextoManualColado()">
+                <i class="fa-solid fa-gears"></i> Processar e Revisar Itens
+            </button>
         </div>
     </div>
 
@@ -715,6 +737,7 @@
             nomeP1: 'Jhonatan',
             nomeP2: 'Thayna',
             darkMode: false,
+            apiPythonUrl: '',
             mesReferencia: new Date().getMonth(),
             renda: { p1_05: 0, p2_05: 0, p1_20: 898.23, p2_20: 0, extra: 0 },
             orcamento: { Casa: 300, Mercado: 600, 'Contas Fixas': 500, Lazer: 200, Tecnologia: 100 },
@@ -751,19 +774,20 @@
                 document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1 || 'Jhonatan';
                 document.getElementById('lblRendaP2_05').innerText = window.appData.nomeP2 || 'Thayna';
                 document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2 || 'Thayna';
+                if (document.getElementById('inputApiPythonUrl')) {
+                    document.getElementById('inputApiPythonUrl').value = window.appData.apiPythonUrl || '';
+                }
             }
         }
     </script>
 
     <script>
-        // --- VARIÁVEIS PARA RASTREAR EDIÇÃO E SCANNER ---
         let editMetaId = null;
         let editItemCasaId = null;
         let html5QrScanner = null;
         let scannerCameraFacing = "environment";
         let itensDetectadosTemp = [];
 
-        // --- TELA DE BOAS VINDAS & FOGOS ---
         window.entrarApp = function() {
             let ws = document.getElementById('welcomeScreen');
             ws.style.opacity = '0';
@@ -813,6 +837,7 @@
 
         window.atualizarNomeP1 = function(val) { appData.nomeP1 = val; salvarDados(); };
         window.atualizarNomeP2 = function(val) { appData.nomeP2 = val; salvarDados(); };
+        window.salvarConfigApi = function(val) { appData.apiPythonUrl = val.trim(); salvarDados(); };
 
         function calcularFinancas() {
             let r = appData.renda;
@@ -897,10 +922,10 @@
             renderizarAtividades();
         };
 
-        // --- SCANNER DE QR CODE INTELIGENTE ---
+        // --- SCANNER E PARSER DE CUPOM / QR CODE ---
         function deduzirCategoria(nome) {
             const n = nome.toUpperCase();
-            if (n.includes('SBT') || n.includes('SABONETE') || n.includes('SH') || n.includes('SHAMPOO') || n.includes('CR COLG') || n.includes('DENTAL') || n.includes('P H FAM') || n.includes('HIGI')) return 'Banheiro';
+            if (n.includes('SBT') || n.includes('SABONETE') || n.includes('SH') || n.includes('SHAMPOO') || n.includes('CR COLG') || n.includes('DENTAL') || n.includes('P H FAM') || n.includes('HIGI') || n.includes('HAST')) return 'Banheiro';
             if (n.includes('DET') || n.includes('YPE') || n.includes('D PATO') || n.includes('TOALHA YURI') || n.includes('ALCOOL') || n.includes('COPERALC') || n.includes('LAVAN')) return 'Lavanderia';
             if (n.includes('PAO') || n.includes('PANCO') || n.includes('TAPIOCA') || n.includes('PRATO') || n.includes('PANELA') || n.includes('COZ')) return 'Cozinha';
             if (n.includes('GATORADE') || n.includes('TRENTO') || n.includes('ROSQ') || n.includes('LAZER') || n.includes('JOGO')) return 'Lazer';
@@ -912,12 +937,27 @@
             let items = [];
             let lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-            // Formato 1: Estrutura padrão de blocos da nota (Nome + Código / Qtde.: X UN: Y Vl. Unit: Z Vl. Total W)
             let i = 0;
             while (i < lines.length) {
                 let line = lines[i];
+
+                // Padrão 1: TSV Compacto do gerador (qtd \t valor \t categoria \t nome)
+                if (line.includes('\t')) {
+                    let p = line.split('\t');
+                    if (p.length >= 4) {
+                        items.push({
+                            quantidade: parseInt(p[0]) || 1,
+                            valorTotal: parseFloat(p[1].replace(',', '.')) || 0,
+                            categoria: p[2].trim(),
+                            nome: p[3].trim()
+                        });
+                        i++;
+                        continue;
+                    }
+                }
+
+                // Padrão 2: Bloco impresso da Fazenda (Nome na linha i-1, Qtde na linha i, Total na linha i+1)
                 let regexQtde = /Qtde\.?:\s*([0-9.,]+).*?Vl\.?\s*Unit\.?:\s*([0-9.,]+)/i;
-                
                 if (regexQtde.test(line)) {
                     let nome = (i > 0) ? lines[i - 1].replace(/\(Código.*?\)/i, '').trim() : "Item Desconhecido";
                     let match = line.match(regexQtde);
@@ -939,7 +979,7 @@
                         categoria: deduzirCategoria(nome)
                     });
                 } else if (/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i.test(line)) {
-                    // Formato 2: Lista consolidada rápida (Ex: 16x TRENTO 29G - R$ 39,84)
+                    // Padrão 3: Linha simples (16x TRENTO 29G - R$ 39,84)
                     let m = line.match(/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i);
                     let qtd = parseInt(m[1]) || 1;
                     let nome = m[2].trim();
@@ -954,7 +994,7 @@
                 i++;
             }
 
-            // Agrupa itens repetidos caso o cupom tenha registrado linhas avulsas (Ex: 8x Del Valle)
+            // Agrupa itens repetidos somando quantidade e valor total
             let mapa = new Map();
             items.forEach(it => {
                 let key = it.nome.toUpperCase();
@@ -1023,13 +1063,51 @@
                 });
         };
 
-        function onQrCodeDetectado(decodedText) {
+        async function onQrCodeDetectado(decodedText) {
             pararScannerCamera();
             closeModal('modalScannerQR');
 
+            // Se for um link HTTP/HTTPS da SEFAZ, envia para a API Python na nuvem
+            if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+                const urlBaseApi = appData.apiPythonUrl || "https://api-nfe-casal.onrender.com";
+                
+                let confirmou = confirm("QR Code da Fazenda detectado!\n\nDeseja consultar a lista de itens via servidor Python na nuvem?");
+                if (!confirmou) return;
+
+                try {
+                    const resposta = await fetch(`${urlBaseApi}/consultar-nfe`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: decodedText })
+                    });
+
+                    if (!resposta.ok) {
+                        const errData = await resposta.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Falha na resposta da API Python");
+                    }
+
+                    const dados = await resposta.json();
+                    if (dados.itens && dados.itens.length > 0) {
+                        itensDetectadosTemp = dados.itens.map(i => ({
+                            nome: i.nome,
+                            quantidade: i.quantidade || 1,
+                            valorTotal: i.valorReal,
+                            categoria: i.categoria || deduzirCategoria(i.nome)
+                        }));
+                        exibirRevisaoItens(itensDetectadosTemp);
+                        return;
+                    } else {
+                        alert("A API Python não localizou itens detalhados nesta nota.");
+                    }
+                } catch (e) {
+                    alert(`Não foi possível conectar com a API Python (${e.message}).\n\nVocê também pode copiar o texto da nota na Fazenda e usar o botão 'Colar Texto da Fazenda'.`);
+                    return;
+                }
+            }
+
+            // Se for texto local (ex: QR Code gerado pelo app ou planilha)
             let itens = parseQrText(decodedText);
             
-            // Caso o QR code seja uma chave ou texto compacto, tenta identificar ou cria registro único
             if (itens.length === 0) {
                 let possivelValor = decodedText.match(/([0-9]+[.,][0-9]{2})/);
                 let valorIdentificado = possivelValor ? parseFloat(possivelValor[1].replace(',', '.')) : 0;
@@ -1045,9 +1123,31 @@
             exibirRevisaoItens(itens);
         }
 
-        function onQrCodeErro(errorMessage) {
-            // Callback contínuo enquanto o scanner busca o QR Code no frame
-        }
+        function onQrCodeErro(errorMessage) {}
+
+        // --- ENTRADA MANUAL DE TEXTO DA FAZENDA ---
+        window.abrirModalColarTexto = function() {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+            document.getElementById('txtManualFazenda').value = '';
+            openModal('modalColarTexto');
+        };
+
+        window.processarTextoManualColado = function() {
+            let texto = document.getElementById('txtManualFazenda').value;
+            if (!texto.trim()) {
+                alert("Cole o texto copiado da página da Fazenda.");
+                return;
+            }
+            let itens = parseQrText(texto);
+            if (itens.length === 0) {
+                alert("Nenhum item reconhecido no formato padrão. Verifique o texto colado.");
+                return;
+            }
+            closeModal('modalColarTexto');
+            itensDetectadosTemp = itens;
+            exibirRevisaoItens(itens);
+        };
 
         function exibirRevisaoItens(itens) {
             let container = document.getElementById('scannedItemsListPreview');
@@ -1095,19 +1195,18 @@
                     nome: `${it.quantidade > 1 ? it.quantidade + 'x ' : ''}${it.nome}`,
                     categoria: it.categoria,
                     status: 'Comprado',
-                    valorReal: parseFloat(it.valorTotal.toFixed(2)) // Grava o valor total somado do item
+                    valorReal: parseFloat(it.valorTotal.toFixed(2))
                 });
             });
 
-            registrarAtividade(`QR Code: ${itensDetectadosTemp.length} itens importados — ${formatarMoeda(totalImportado)}`);
+            registrarAtividade(`Importação: ${itensDetectadosTemp.length} itens lançados — ${formatarMoeda(totalImportado)}`);
             salvarDados();
             closeModal('modalRevisaoQR');
 
-            // Feedback festivo
             confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
         };
 
-        // --- CASA (CRIAR E EDITAR) ---
+        // --- ABA CASA: RENDER E EDIÇÃO ---
         let filtroCasaAtual = 'todos';
         window.filterCasa = function(cat, el) { 
             filtroCasaAtual = cat; 
@@ -1175,7 +1274,7 @@
             let nome = document.getElementById('itemNome').value; 
             let categoria = document.getElementById('itemCategoria').value; 
             let status = document.getElementById('itemStatus').value; 
-            let valorReal = parseFloat(document.getElementById('itemValorReal').value) || 0;
+            let valorReal = parseFloat(document.getElementById('itemValorReal').value) || 0; 
             
             if (!nome || valorReal <= 0) { 
                 alert('Informe o nome e o valor da compra.'); 
@@ -1205,7 +1304,7 @@
             salvarDados(); 
         };
 
-        // --- CONTAS ---
+        // --- ABA FINANÇAS: CONTAS ---
         function renderizarContas() {
             let container = document.getElementById('financasContasContainer'); 
             container.innerHTML = '';
@@ -1255,7 +1354,7 @@
             salvarDados(); 
         };
 
-        // --- ORÇAMENTO E RENDA ---
+        // --- ORÇAMENTO E RENDAS ---
         function renderizarOrcamento() {
             let container = document.getElementById('financasOrcamentoContainer'); 
             container.innerHTML = '';
@@ -1294,7 +1393,7 @@
             closeModal('modalRenda'); 
         };
 
-        // --- METAS ---
+        // --- ABA METAS ---
         function renderizarObjetivos() {
             let container = document.getElementById('objetivosContainer'); 
             container.innerHTML = '';
@@ -1367,7 +1466,7 @@
             salvarDados(); 
         };
 
-        // --- GERAIS ---
+        // --- GERAIS & EXPORTAÇÃO ---
         window.resetarDados = async function() { 
             if (confirm('Tem certeza? Isso apagará os dados do navegador e da nuvem Firebase.')) { 
                 localStorage.removeItem('app_casal_data_v1'); 
