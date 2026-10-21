@@ -552,7 +552,7 @@
         </div>
     </div>
 
-    <!-- Modal Item Casa (Permite Edição) -->
+    <!-- Modal Item Casa (Com Quantidade, Unitário e Cálculo Automático) -->
     <div class="modal-overlay" id="modalItemCasa">
         <div class="modal-content">
             <div class="modal-header">
@@ -561,7 +561,11 @@
             </div>
             <div class="form-group">
                 <label>Nome do Item / Compra</label>
-                <input type="text" id="itemNome" placeholder="Ex: Compra Mercado Semanal, Panela...">
+                <input type="text" id="itemNome" placeholder="Ex: Panela, Compra Semanal...">
+            </div>
+            <div class="form-group">
+                <label>Quantidade</label>
+                <input type="number" id="itemQuantidade" min="1" value="1" placeholder="1" oninput="calcularTotalModalItem()">
             </div>
             <div class="form-group">
                 <label>Categoria</label>
@@ -585,8 +589,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Valor Pago / Estimado (R$)</label>
-                <input type="number" id="itemValorReal" step="0.01" placeholder="Ex: 400.00">
+                <label>Valor Unitário (R$)</label>
+                <input type="number" id="itemValorReal" step="0.01" placeholder="Ex: 5.99" oninput="calcularTotalModalItem()">
+                <span style="font-size: 11px; color: var(--gray); display: block; margin-top: 4px;">
+                    Total calculado: <b id="lblPreviaTotalItem" style="color: var(--primary);">R$ 0,00</b>
+                </span>
             </div>
             <button class="btn" onclick="salvarItemCasa()">Salvar Registro</button>
         </div>
@@ -841,7 +848,7 @@
 
         function calcularFinancas() {
             let r = appData.renda;
-            let rendaTotal = (parseFloat(r.p1_05) || 0) + (parseFloat(r.p2_05) || 0) + (parseFloat(r.p1_20) || 0) + (parseFloat(r.p2_20) || 0) + (parseFloat(r.extra) || 0);
+            let rendaTotal = (parseFloat(r.p1_05) || 0) + (parseFloat(r.p2_05) || 0) + (parseFloat(r.p1_20) || 0) + (parseFloat(r.extra) || 0);
             let gastosItens = appData.itensCasa.filter(i => i.status === 'Comprado').reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
             let contasPagas = appData.contas.filter(c => c.status === 'paga').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
             let contasPendentes = appData.contas.filter(c => c.status === 'pendente').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
@@ -1139,7 +1146,14 @@
                         alert("Nenhum item localizado nesta nota.");
                     }
                 } catch (e) {
-                    alert(`Não foi possível conectar com a API Python (${e.message}).\n\nVerifique se o Render está ativo ou use a opção 'Colar Texto da Fazenda'.`);
+                    // Fallback para tentar ler texto embutido
+                    let itensFallback = parseQrText(decodedText);
+                    if (itensFallback.length > 0) {
+                        itensDetectadosTemp = itensFallback;
+                        exibirRevisaoItens(itensFallback);
+                    } else {
+                        alert(`Não foi possível conectar com a API Python (${e.message}).\n\nUse o botão 'Colar Texto da Fazenda' para importar os itens.`);
+                    }
                     return;
                 }
             }
@@ -1229,9 +1243,11 @@
 
             itensDetectadosTemp.forEach((it, index) => {
                 totalImportado += it.valorTotal;
+                let nomeFormatado = it.quantidade > 1 ? `${it.quantidade}x ${it.nome.replace(/^\d+x\s*/i, '')}` : it.nome;
                 appData.itensCasa.unshift({
                     id: agora + index,
-                    nome: `${it.quantidade > 1 ? it.quantidade + 'x ' : ''}${it.nome}`,
+                    nome: nomeFormatado,
+                    quantidade: it.quantidade || 1,
                     categoria: it.categoria,
                     status: 'Comprado',
                     valorReal: parseFloat(it.valorTotal.toFixed(2))
@@ -1245,7 +1261,7 @@
             confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
         };
 
-        // --- ABA CASA: RENDER E EDIÇÃO ---
+        // --- ABA CASA: RENDER, CÁLCULO E EDIÇÃO COM QUANTIDADE ---
         let filtroCasaAtual = 'todos';
         window.filterCasa = function(cat, el) { 
             filtroCasaAtual = cat; 
@@ -1286,13 +1302,23 @@
             });
         }
 
+        // Calcula dinamicamente a prévia: Quantidade x Valor Unitário
+        window.calcularTotalModalItem = function() {
+            let qtd = parseInt(document.getElementById('itemQuantidade').value) || 1;
+            let unit = parseFloat(document.getElementById('itemValorReal').value) || 0;
+            let total = qtd * unit;
+            document.getElementById('lblPreviaTotalItem').innerText = formatarMoeda(total);
+        };
+
         window.openModalItemCasa = function() { 
             editItemCasaId = null;
             document.getElementById('modalItemCasaTitle').innerText = "Novo Item / Compra";
             document.getElementById('itemNome').value = '';
+            document.getElementById('itemQuantidade').value = '1';
             document.getElementById('itemCategoria').value = 'Mercado';
             document.getElementById('itemStatus').value = 'Comprado';
             document.getElementById('itemValorReal').value = '';
+            document.getElementById('lblPreviaTotalItem').innerText = 'R$ 0,00';
             openModal('modalItemCasa'); 
         };
 
@@ -1301,37 +1327,64 @@
             if (item) {
                 editItemCasaId = id;
                 document.getElementById('modalItemCasaTitle').innerText = "Editar Item / Compra";
-                document.getElementById('itemNome').value = item.nome;
+
+                // Se o nome começar com "Nx ", deduz a quantidade e limpa o nome
+                let matchQtd = item.nome.match(/^(\d+)x\s+(.*)/i);
+                let qtd = matchQtd ? parseInt(matchQtd[1]) : (item.quantidade || 1);
+                let nomeLimpo = matchQtd ? matchQtd[2] : item.nome;
+
+                document.getElementById('itemNome').value = nomeLimpo;
+                document.getElementById('itemQuantidade').value = qtd;
                 document.getElementById('itemCategoria').value = item.categoria;
                 document.getElementById('itemStatus').value = item.status;
-                document.getElementById('itemValorReal').value = item.valorReal;
+                
+                // Calcula o unitário a partir do valorReal gravado
+                let unitario = (item.valorReal / qtd);
+                document.getElementById('itemValorReal').value = unitario.toFixed(2);
+                document.getElementById('lblPreviaTotalItem').innerText = formatarMoeda(item.valorReal);
+
                 openModal('modalItemCasa');
             }
         };
 
         window.salvarItemCasa = function() {
-            let nome = document.getElementById('itemNome').value; 
+            let nome = document.getElementById('itemNome').value.trim(); 
+            let qtd = parseInt(document.getElementById('itemQuantidade').value) || 1;
             let categoria = document.getElementById('itemCategoria').value; 
             let status = document.getElementById('itemStatus').value; 
-            let valorReal = parseFloat(document.getElementById('itemValorReal').value) || 0; 
+            let valorUnitario = parseFloat(document.getElementById('itemValorReal').value) || 0; 
             
-            if (!nome || valorReal <= 0) { 
-                alert('Informe o nome e o valor da compra.'); 
+            if (!nome || valorUnitario <= 0) { 
+                alert('Informe o nome e o valor do item.'); 
                 return; 
             }
+
+            // Calcula o valor total multiplicado
+            let valorTotalCalculado = parseFloat((qtd * valorUnitario).toFixed(2));
+            
+            // Padroniza o nome com "Nx " se quantidade for superior a 1
+            let nomeFinal = qtd > 1 ? `${qtd}x ${nome.replace(/^\d+x\s*/i, '')}` : nome.replace(/^\d+x\s*/i, '');
 
             if (editItemCasaId !== null) {
                 let index = appData.itensCasa.findIndex(i => i.id === editItemCasaId);
                 if (index !== -1) {
-                    appData.itensCasa[index].nome = nome;
+                    appData.itensCasa[index].nome = nomeFinal;
+                    appData.itensCasa[index].quantidade = qtd;
                     appData.itensCasa[index].categoria = categoria;
                     appData.itensCasa[index].status = status;
-                    appData.itensCasa[index].valorReal = valorReal;
-                    registrarAtividade(`Edição: ${nome} — ${formatarMoeda(valorReal)}`);
+                    appData.itensCasa[index].valorReal = valorTotalCalculado;
+                    registrarAtividade(`Edição: ${nomeFinal} — ${formatarMoeda(valorTotalCalculado)}`);
                 }
             } else {
-                appData.itensCasa.unshift({ id: Date.now(), nome, categoria, status, valorReal }); 
-                registrarAtividade(`Compra: ${nome} — ${formatarMoeda(valorReal)}`);
+                appData.itensCasa.unshift({ 
+                    id: Date.now(), 
+                    nome: nomeFinal, 
+                    quantidade: qtd,
+                    categoria, 
+                    status, 
+                    valorReal: valorTotalCalculado 
+                }); 
+                registrarAtividade(`Compra: ${nomeFinal} — ${formatarMoeda(valorTotalCalculado)}`);
             }
 
             salvarDados(); 
