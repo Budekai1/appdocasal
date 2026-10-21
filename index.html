@@ -446,8 +446,8 @@
                 </div>
                 <div class="form-group">
                     <label>URL da API Python (Render/ngrok)</label>
-                    <input type="text" id="inputApiPythonUrl" placeholder="https://sua-api.onrender.com" onchange="salvarConfigApi(this.value)">
-                    <span style="font-size: 10px; color: var(--gray);">Deixe em branco para usar a rota padrão configurada.</span>
+                    <input type="text" id="inputApiPythonUrl" placeholder="https://api-nfe-casal.onrender.com" onchange="salvarConfigApi(this.value)">
+                    <span style="font-size: 10px; color: var(--gray);">Deixe em branco para usar a rota padrão do Render.</span>
                 </div>
                 <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Backup JSON</button>
                 <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Geral (App e Nuvem)</button>
@@ -941,7 +941,25 @@
             while (i < lines.length) {
                 let line = lines[i];
 
-                // Padrão 1: TSV Compacto do gerador (qtd \t valor \t categoria \t nome)
+                // Padrão PIPE ultraleve: Qtd|Total|Nome
+                if (line.includes('|')) {
+                    let p = line.split('|');
+                    if (p.length >= 3) {
+                        let qtd = parseInt(p[0]) || 1;
+                        let total = parseFloat(p[1].replace(',', '.')) || 0;
+                        let nome = p[2].trim();
+                        items.push({
+                            nome: nome,
+                            quantidade: qtd,
+                            valorTotal: total,
+                            categoria: deduzirCategoria(nome)
+                        });
+                        i++;
+                        continue;
+                    }
+                }
+
+                // Padrão 1: TSV Compacto (qtd \t valor \t categoria \t nome)
                 if (line.includes('\t')) {
                     let p = line.split('\t');
                     if (p.length >= 4) {
@@ -1067,11 +1085,32 @@
             pararScannerCamera();
             closeModal('modalScannerQR');
 
-            // Se for um link HTTP/HTTPS da SEFAZ, envia para a API Python na nuvem
+            // 1. Se for um link direto para JSON na nuvem (npoint.io, gist, raw JSON)
+            if (decodedText.includes("npoint.io") || decodedText.endsWith(".json")) {
+                try {
+                    const resp = await fetch(decodedText);
+                    const dados = await resp.json();
+                    
+                    if (Array.isArray(dados)) {
+                        itensDetectadosTemp = dados.map(item => ({
+                            nome: item.nome,
+                            quantidade: item.qtd || item.quantidade || 1,
+                            valorTotal: item.total || item.valorTotal || item.valorReal || 0,
+                            categoria: item.cat || item.categoria || deduzirCategoria(item.nome)
+                        }));
+                        exibirRevisaoItens(itensDetectadosTemp);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Falha ao puxar JSON direto:", err);
+                }
+            }
+
+            // 2. Se for link oficial da Fazenda/SEFAZ (com chave fiscal)
             if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
                 const urlBaseApi = appData.apiPythonUrl || "https://api-nfe-casal.onrender.com";
                 
-                let confirmou = confirm("QR Code da Fazenda detectado!\n\nDeseja consultar a lista de itens via servidor Python na nuvem?");
+                let confirmou = confirm("Link fiscal detectado!\n\nDeseja consultar os produtos na Fazenda via API Python?");
                 if (!confirmou) return;
 
                 try {
@@ -1083,7 +1122,7 @@
 
                     if (!resposta.ok) {
                         const errData = await resposta.json().catch(() => ({}));
-                        throw new Error(errData.detail || "Falha na resposta da API Python");
+                        throw new Error(errData.detail || "Falha na resposta do servidor");
                     }
 
                     const dados = await resposta.json();
@@ -1097,15 +1136,15 @@
                         exibirRevisaoItens(itensDetectadosTemp);
                         return;
                     } else {
-                        alert("A API Python não localizou itens detalhados nesta nota.");
+                        alert("Nenhum item localizado nesta nota.");
                     }
                 } catch (e) {
-                    alert(`Não foi possível conectar com a API Python (${e.message}).\n\nVocê também pode copiar o texto da nota na Fazenda e usar o botão 'Colar Texto da Fazenda'.`);
+                    alert(`Não foi possível conectar com a API Python (${e.message}).\n\nVerifique se o Render está ativo ou use a opção 'Colar Texto da Fazenda'.`);
                     return;
                 }
             }
 
-            // Se for texto local (ex: QR Code gerado pelo app ou planilha)
+            // 3. Se for texto puro ou lista compacta
             let itens = parseQrText(decodedText);
             
             if (itens.length === 0) {
