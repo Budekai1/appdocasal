@@ -4,5 +4,6 @@ set -e
 pip install --upgrade pip
 # Instala as dependências Python
 pip install -r requirements.txt
-# Instala apenas o binário do Chromium sem tentar aceder ao utilizador root
+# Força o Playwright a descarregar o navegador para uma pasta fixa do projeto
+export PLAYWRIGHT_BROWSERS_PATH="./pw-browsers"
 playwright install chromium
