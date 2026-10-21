@@ -42,7 +42,7 @@ async def consultar_nfe(dados: QrRequest):
     if not url.startswith("http"):
         raise HTTPException(status_code=400, detail="URL inválida fornecida.")
 
-    itens = []
+    itens_brutos = []
     
     try:
         async with async_playwright() as p:
@@ -112,7 +112,7 @@ async def consultar_nfe(dados: QrRequest):
                             vl_total = 0.0
 
                         if vl_total > 0:
-                            itens.append({
+                            itens_brutos.append({
                                 "nome": nome,
                                 "quantidade": int(qtd_val) if qtd_val.is_integer() else qtd_val,
                                 "valorReal": round(vl_total, 2),
@@ -122,7 +122,7 @@ async def consultar_nfe(dados: QrRequest):
                     i += 1
 
                 # Se a busca por texto não achar, tenta tabela direta
-                if not itens:
+                if not itens_brutos:
                     tabela_linhas = await page.locator("#tabResult tr, table.tabItens tr, tr[id^='Item']").all()
                     for tr in tabela_linhas:
                         t = await tr.inner_text()
@@ -133,7 +133,7 @@ async def consultar_nfe(dados: QrRequest):
                             q = float(m_qtd.group(1).replace(",", "."))
                             v = float(m_tot.group(1).replace(".", "").replace(",", "."))
                             n = m_nome.group(1).strip() if m_nome else "Produto"
-                            itens.append({
+                            itens_brutos.append({
                                 "nome": n,
                                 "quantidade": int(q) if q.is_integer() else q,
                                 "valorReal": round(v, 2),
@@ -147,7 +147,27 @@ async def consultar_nfe(dados: QrRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro no Playwright: {str(e)}")
 
-    if not itens:
+    # --- CONSOLIDAÇÃO DE ITENS REPETIDOS (SOMA QTD E VALOR TOTAL) ---
+    mapa_consolidados = {}
+    for it in itens_brutos:
+        chave = it["nome"].strip().upper()
+        if chave in mapa_consolidados:
+            mapa_consolidados[chave]["quantidade"] += it["quantidade"]
+            mapa_consolidados[chave]["valorReal"] = round(
+                mapa_consolidados[chave]["valorReal"] + it["valorReal"], 2
+            )
+        else:
+            mapa_consolidados[chave] = {
+                "nome": it["nome"],
+                "quantidade": it["quantidade"],
+                "valorReal": it["valorReal"],
+                "categoria": it["categoria"],
+                "status": "Comprado"
+            }
+
+    itens_finais = list(mapa_consolidados.values())
+
+    if not itens_finais:
         raise HTTPException(status_code=404, detail="Itens não localizados na página da Fazenda.")
 
-    return {"itens": itens, "total_itens": len(itens)}
+    return {"itens": itens_finais, "total_itens": len(itens_finais)}
