@@ -514,7 +514,7 @@
                 <button class="icon-btn" onclick="closeModal('modalColarTexto')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">
-                Cole aqui as linhas com nomes, quantidades e valores copiados do portal da SEFAZ:
+                Cole aqui as linhas copiadas da SEFAZ. Todos os itens irão automaticamente para <b>Mercado</b>:
             </p>
             <textarea id="txtManualFazenda" rows="8" placeholder="BAT PALHA YOKI 105G (Código: 1136513)&#10;Qtde.:2   UN: Un   Vl. Unit.:   5,99&#10;11,98..."></textarea>
             <button class="btn" style="margin-top: 10px;" onclick="processarTextoManualColado()">
@@ -527,7 +527,7 @@
     <div class="modal-overlay" id="modalRevisaoQR">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-clipboard-check" style="color: var(--success);"></i> Itens Reconhecidos</div>
+                <div class="modal-title"><i class="fa-solid fa-clipboard-check" style="color: var(--success);"></i> Itens Reconhecidos (Mercado)</div>
                 <button class="icon-btn" onclick="closeModal('modalRevisaoQR')"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
@@ -645,11 +645,11 @@
         </div>
     </div>
 
-    <!-- Modal Rendas -->
+    <!-- Modal Rendas (Apenas Dia 20 + Extras) -->
     <div class="modal-overlay" id="modalRenda">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Rendas do Mês</div>
+                <div class="modal-title">Entradas do Mês (Dia 20)</div>
                 <button class="icon-btn" onclick="closeModal('modalRenda')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -657,7 +657,7 @@
                 Coloque aqui apenas o valor que vai para o <b>teto de gastos</b>. Os 50% guardados no PicPay ficam como reserva estratégica.
             </p>
 
-            <h3 style="font-size: 12px; color: var(--primary); margin-bottom: 6px;">Recebimento Dia 20 (Adiantamento)</h3>
+            <h3 style="font-size: 12px; color: var(--primary); margin-bottom: 6px;">Recebimento Dia 20</h3>
             <div class="form-group">
                 <label><span id="lblRendaP1_20">Jhonatan</span> (Dia 20)</label>
                 <div style="display: flex; gap: 6px;">
@@ -667,21 +667,14 @@
             </div>
             <div class="form-group">
                 <label><span id="lblRendaP2_20">Thayna</span> (Dia 20)</label>
-                <input type="number" id="rendaP2_20" step="0.01" placeholder="0.00">
-            </div>
-
-            <h3 style="font-size: 12px; color: var(--primary); margin-bottom: 6px;">Recebimento Dia 05 (Salário)</h3>
-            <div class="form-group">
-                <label><span id="lblRendaP1_05">Jhonatan</span> (Dia 05)</label>
-                <input type="number" id="rendaP1_05" step="0.01" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label><span id="lblRendaP2_05">Thayna</span> (Dia 05)</label>
-                <input type="number" id="rendaP2_05" step="0.01" placeholder="0.00">
+                <div style="display: flex; gap: 6px;">
+                    <input type="number" id="rendaP2_20" step="0.01" placeholder="0.00">
+                    <button class="btn btn-outline btn-sm" onclick="aplicar50Porcento('rendaP2_20')" title="Aplica 50% do valor digitado">50%</button>
+                </div>
             </div>
 
             <div class="form-group">
-                <label>Sobras Antigas / Extras</label>
+                <label>Sobras Antigas / Extras (Usado para quitar compras antes do dia 20)</label>
                 <input type="number" id="rendaExtra" step="0.01" placeholder="0.00">
             </div>
 
@@ -746,7 +739,7 @@
             darkMode: false,
             apiPythonUrl: '',
             mesReferencia: new Date().getMonth(),
-            renda: { p1_05: 0, p2_05: 0, p1_20: 898.23, p2_20: 0, extra: 0 },
+            renda: { p1_20: 493.00, p2_20: 0, extra: 0 },
             orcamento: { Casa: 300, Mercado: 600, 'Contas Fixas': 500, Lazer: 200, Tecnologia: 100 },
             itensCasa: [],
             contas: [],
@@ -777,9 +770,7 @@
             if(document.getElementById('inputNomeP1')) {
                 document.getElementById('inputNomeP1').value = window.appData.nomeP1 || 'Jhonatan';
                 document.getElementById('inputNomeP2').value = window.appData.nomeP2 || 'Thayna';
-                document.getElementById('lblRendaP1_05').innerText = window.appData.nomeP1 || 'Jhonatan';
                 document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1 || 'Jhonatan';
-                document.getElementById('lblRendaP2_05').innerText = window.appData.nomeP2 || 'Thayna';
                 document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2 || 'Thayna';
                 if (document.getElementById('inputApiPythonUrl')) {
                     document.getElementById('inputApiPythonUrl').value = window.appData.apiPythonUrl || '';
@@ -822,7 +813,7 @@
         window.aplicar50Porcento = function(inputId) {
             let elem = document.getElementById(inputId); 
             let val = parseFloat(elem.value);
-            if (!val || isNaN(val)) { val = 1796.45; }
+            if (!val || isNaN(val)) { val = 1000.00; }
             let metade = (val / 2).toFixed(2); 
             elem.value = metade;
         };
@@ -846,9 +837,10 @@
         window.atualizarNomeP2 = function(val) { appData.nomeP2 = val; salvarDados(); };
         window.salvarConfigApi = function(val) { appData.apiPythonUrl = val.trim(); salvarDados(); };
 
+        // CÁLCULO FINANCEIRO CORRIGIDO (Soma os dois parceiros no dia 20 + extras)
         function calcularFinancas() {
             let r = appData.renda;
-            let rendaTotal = (parseFloat(r.p1_05) || 0) + (parseFloat(r.p2_05) || 0) + (parseFloat(r.p1_20) || 0) + (parseFloat(r.extra) || 0);
+            let rendaTotal = (parseFloat(r.p1_20) || 0) + (parseFloat(r.p2_20) || 0) + (parseFloat(r.extra) || 0);
             let gastosItens = appData.itensCasa.filter(i => i.status === 'Comprado').reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
             let contasPagas = appData.contas.filter(c => c.status === 'paga').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
             let contasPendentes = appData.contas.filter(c => c.status === 'pendente').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
@@ -929,14 +921,9 @@
             renderizarAtividades();
         };
 
-        // --- SCANNER E PARSER DE CUPOM / QR CODE ---
+        // --- SCANNER E PARSER (FORÇANDO 100% PARA MERCADO) ---
         function deduzirCategoria(nome) {
-            const n = nome.toUpperCase();
-            if (n.includes('SBT') || n.includes('SABONETE') || n.includes('SH') || n.includes('SHAMPOO') || n.includes('CR COLG') || n.includes('DENTAL') || n.includes('P H FAM') || n.includes('HIGI') || n.includes('HAST')) return 'Banheiro';
-            if (n.includes('DET') || n.includes('YPE') || n.includes('D PATO') || n.includes('TOALHA YURI') || n.includes('ALCOOL') || n.includes('COPERALC') || n.includes('LAVAN')) return 'Lavanderia';
-            if (n.includes('PAO') || n.includes('PANCO') || n.includes('TAPIOCA') || n.includes('PRATO') || n.includes('PANELA') || n.includes('COZ')) return 'Cozinha';
-            if (n.includes('GATORADE') || n.includes('TRENTO') || n.includes('ROSQ') || n.includes('LAZER') || n.includes('JOGO')) return 'Lazer';
-            if (n.includes('CABO') || n.includes('USB') || n.includes('FONE') || n.includes('MOUSE')) return 'Tecnologia';
+            // Toda leitura de nota fiscal de mercado pertence unicamente a Mercado
             return 'Mercado';
         }
 
@@ -959,7 +946,7 @@
                             nome: nome,
                             quantidade: qtd,
                             valorTotal: total,
-                            categoria: deduzirCategoria(nome)
+                            categoria: 'Mercado'
                         });
                         i++;
                         continue;
@@ -973,7 +960,7 @@
                         items.push({
                             quantidade: parseInt(p[0]) || 1,
                             valorTotal: parseFloat(p[1].replace(',', '.')) || 0,
-                            categoria: p[2].trim(),
+                            categoria: 'Mercado',
                             nome: p[3].trim()
                         });
                         i++;
@@ -1001,7 +988,7 @@
                         nome: nome,
                         quantidade: qtd,
                         valorTotal: vlTotal,
-                        categoria: deduzirCategoria(nome)
+                        categoria: 'Mercado'
                     });
                 } else if (/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i.test(line)) {
                     // Padrão 3: Linha simples (16x TRENTO 29G - R$ 39,84)
@@ -1013,7 +1000,7 @@
                         nome: nome,
                         quantidade: qtd,
                         valorTotal: vlTotal,
-                        categoria: deduzirCategoria(nome)
+                        categoria: 'Mercado'
                     });
                 }
                 i++;
@@ -1092,7 +1079,7 @@
             pararScannerCamera();
             closeModal('modalScannerQR');
 
-            // 1. Se for um link direto para JSON na nuvem (npoint.io, gist, raw JSON)
+            // 1. Se for um link direto para JSON na nuvem
             if (decodedText.includes("npoint.io") || decodedText.endsWith(".json")) {
                 try {
                     const resp = await fetch(decodedText);
@@ -1103,7 +1090,7 @@
                             nome: item.nome,
                             quantidade: item.qtd || item.quantidade || 1,
                             valorTotal: item.total || item.valorTotal || item.valorReal || 0,
-                            categoria: item.cat || item.categoria || deduzirCategoria(item.nome)
+                            categoria: 'Mercado'
                         }));
                         exibirRevisaoItens(itensDetectadosTemp);
                         return;
@@ -1113,9 +1100,10 @@
                 }
             }
 
-            // 2. Se for link oficial da Fazenda/SEFAZ (com chave fiscal)
+            // 2. Se for link oficial da Fazenda/SEFAZ
             if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
-                const urlBaseApi = appData.apiPythonUrl || "https://api-nfe-casal.onrender.com";
+                let urlBaseApi = (appData.apiPythonUrl || "https://api-nfe-casal.onrender.com").trim();
+                if (urlBaseApi.endsWith("/")) urlBaseApi = urlBaseApi.slice(0, -1);
                 
                 let confirmou = confirm("Link fiscal detectado!\n\nDeseja consultar os produtos na Fazenda via API Python?");
                 if (!confirmou) return;
@@ -1138,7 +1126,7 @@
                             nome: i.nome,
                             quantidade: i.quantidade || 1,
                             valorTotal: i.valorReal,
-                            categoria: i.categoria || deduzirCategoria(i.nome)
+                            categoria: 'Mercado'
                         }));
                         exibirRevisaoItens(itensDetectadosTemp);
                         return;
@@ -1146,13 +1134,12 @@
                         alert("Nenhum item localizado nesta nota.");
                     }
                 } catch (e) {
-                    // Fallback para tentar ler texto embutido
                     let itensFallback = parseQrText(decodedText);
                     if (itensFallback.length > 0) {
                         itensDetectadosTemp = itensFallback;
                         exibirRevisaoItens(itensFallback);
                     } else {
-                        alert(`Não foi possível conectar com a API Python (${e.message}).\n\nUse o botão 'Colar Texto da Fazenda' para importar os itens.`);
+                        alert(`Não foi possível conectar com a API Python (${e.message}).\n\nUse o botão 'Colar Texto da Fazenda' para importar.`);
                     }
                     return;
                 }
@@ -1165,7 +1152,7 @@
                 let possivelValor = decodedText.match(/([0-9]+[.,][0-9]{2})/);
                 let valorIdentificado = possivelValor ? parseFloat(possivelValor[1].replace(',', '.')) : 0;
                 itens = [{
-                    nome: "Compra via Cupom Fiscal",
+                    nome: "Compra Supermercado",
                     quantidade: 1,
                     valorTotal: valorIdentificado > 0 ? valorIdentificado : 0,
                     categoria: "Mercado"
@@ -1218,7 +1205,7 @@
                 row.innerHTML = `
                     <div>
                         <div style="font-weight: 700; color: var(--text-color);">${item.quantidade}x ${item.nome}</div>
-                        <span style="color: var(--gray); font-size: 11px;"><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
+                        <span style="color: var(--gray); font-size: 11px;"><i class="fa-solid fa-tag"></i> Mercado</span>
                     </div>
                     <div style="text-align: right;">
                         <span style="font-weight: 700; color: var(--text-color);">${formatarMoeda(item.valorTotal)}</span>
@@ -1248,13 +1235,13 @@
                     id: agora + index,
                     nome: nomeFormatado,
                     quantidade: it.quantidade || 1,
-                    categoria: it.categoria,
+                    categoria: 'Mercado',
                     status: 'Comprado',
                     valorReal: parseFloat(it.valorTotal.toFixed(2))
                 });
             });
 
-            registrarAtividade(`Importação: ${itensDetectadosTemp.length} itens lançados — ${formatarMoeda(totalImportado)}`);
+            registrarAtividade(`Importação: ${itensDetectadosTemp.length} itens lançados em Mercado — ${formatarMoeda(totalImportado)}`);
             salvarDados();
             closeModal('modalRevisaoQR');
 
@@ -1302,7 +1289,6 @@
             });
         }
 
-        // Calcula dinamicamente a prévia: Quantidade x Valor Unitário
         window.calcularTotalModalItem = function() {
             let qtd = parseInt(document.getElementById('itemQuantidade').value) || 1;
             let unit = parseFloat(document.getElementById('itemValorReal').value) || 0;
@@ -1328,7 +1314,6 @@
                 editItemCasaId = id;
                 document.getElementById('modalItemCasaTitle').innerText = "Editar Item / Compra";
 
-                // Se o nome começar com "Nx ", deduz a quantidade e limpa o nome
                 let matchQtd = item.nome.match(/^(\d+)x\s+(.*)/i);
                 let qtd = matchQtd ? parseInt(matchQtd[1]) : (item.quantidade || 1);
                 let nomeLimpo = matchQtd ? matchQtd[2] : item.nome;
@@ -1338,7 +1323,6 @@
                 document.getElementById('itemCategoria').value = item.categoria;
                 document.getElementById('itemStatus').value = item.status;
                 
-                // Calcula o unitário a partir do valorReal gravado
                 let unitario = (item.valorReal / qtd);
                 document.getElementById('itemValorReal').value = unitario.toFixed(2);
                 document.getElementById('lblPreviaTotalItem').innerText = formatarMoeda(item.valorReal);
@@ -1359,10 +1343,7 @@
                 return; 
             }
 
-            // Calcula o valor total multiplicado
             let valorTotalCalculado = parseFloat((qtd * valorUnitario).toFixed(2));
-            
-            // Padroniza o nome com "Nx " se quantidade for superior a 1
             let nomeFinal = qtd > 1 ? `${qtd}x ${nome.replace(/^\d+x\s*/i, '')}` : nome.replace(/^\d+x\s*/i, '');
 
             if (editItemCasaId !== null) {
@@ -1478,8 +1459,6 @@
         window.salvarRenda = function() { 
             appData.renda.p1_20 = parseFloat(document.getElementById('rendaP1_20').value) || 0; 
             appData.renda.p2_20 = parseFloat(document.getElementById('rendaP2_20').value) || 0; 
-            appData.renda.p1_05 = parseFloat(document.getElementById('rendaP1_05').value) || 0; 
-            appData.renda.p2_05 = parseFloat(document.getElementById('rendaP2_05').value) || 0; 
             appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0; 
             salvarDados(); 
             closeModal('modalRenda'); 
@@ -1602,8 +1581,6 @@
         window.openModalRenda = function() { 
             document.getElementById('rendaP1_20').value = appData.renda.p1_20 || ''; 
             document.getElementById('rendaP2_20').value = appData.renda.p2_20 || ''; 
-            document.getElementById('rendaP1_05').value = appData.renda.p1_05 || ''; 
-            document.getElementById('rendaP2_05').value = appData.renda.p2_05 || ''; 
             document.getElementById('rendaExtra').value = appData.renda.extra || ''; 
             openModal('modalRenda'); 
         };
