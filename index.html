@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>App Casal - Organização e Finanças a Dois</title>
     
+    <!-- Ícone da Aba do Navegador (Favicon do Casal) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👩‍❤️‍👨</text></svg>">
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#FF6584">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -368,7 +371,7 @@
 
         <!-- ABA 2: CASA COM LEITOR DE QR CODE -->
         <section id="tab-casa" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: gap; gap: 8px;">
                 <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Itens & Necessidades</h2>
                 <div style="display: flex; gap: 6px;">
                     <button class="btn btn-qr btn-sm" onclick="abrirModalScannerQR()" title="Ler cupom ou lista via QR Code">
@@ -571,6 +574,7 @@
                 <label>Categoria</label>
                 <select id="itemCategoria">
                     <option value="Mercado">🛒 Mercado / Supermercado</option>
+                    <option value="Casa">🏠 Manutenção da Casa / Reformas</option>
                     <option value="Cozinha">🍳 Cozinha</option>
                     <option value="Quarto">🛏️ Quarto</option>
                     <option value="Banheiro">🚿 Banheiro</option>
@@ -599,25 +603,25 @@
         </div>
     </div>
 
-    <!-- Modal Conta -->
+    <!-- Modal Nova Conta (Alinhado com as 5 Categorias do Orçamento) -->
     <div class="modal-overlay" id="modalConta">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Cadastrar Conta / Boleto</div>
+                <div class="modal-title">Cadastrar Conta / Lançamento</div>
                 <button class="icon-btn" onclick="closeModal('modalConta')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="form-group">
                 <label>Descrição</label>
-                <input type="text" id="contaNome" placeholder="Ex: Internet, Aluguel, Luz...">
+                <input type="text" id="contaNome" placeholder="Ex: Internet, Aluguel, Cinema, Supermercado...">
             </div>
             <div class="form-group">
                 <label>Categoria de Orçamento</label>
                 <select id="contaCategoria">
-                    <option value="Casa">Casa</option>
-                    <option value="Mercado">Mercado</option>
-                    <option value="Contas Fixas">Contas Fixas</option>
-                    <option value="Lazer">Lazer</option>
-                    <option value="Tecnologia">Tecnologia</option>
+                    <option value="Contas Fixas">Contas Fixas (Água, Luz, Net, Aluguel)</option>
+                    <option value="Mercado">Mercado (Compras, Feira, Açougue)</option>
+                    <option value="Casa">Casa (Manutenção, Reformas, Reparos)</option>
+                    <option value="Lazer">Lazer (Passeios, Cinema, Jogos, Saídas)</option>
+                    <option value="Tecnologia">Tecnologia (Streaming, Peças, Upgrades)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -625,14 +629,14 @@
                 <input type="number" id="contaValor" step="0.01">
             </div>
             <div class="form-group">
-                <label>Vencimento</label>
+                <label>Vencimento / Data</label>
                 <input type="date" id="contaVencimento">
             </div>
             <div class="form-group">
                 <label>Status</label>
                 <select id="contaStatus">
                     <option value="pendente">Pendente (A pagar)</option>
-                    <option value="paga">Paga</option>
+                    <option value="paga">Paga (Já debitada)</option>
                 </select>
             </div>
             
@@ -641,7 +645,7 @@
                 <label style="margin: 0; color: var(--info); font-weight: 700;">Conta Fixa? (Repete todo mês)</label>
             </div>
 
-            <button class="btn" onclick="salvarConta()">Salvar Conta</button>
+            <button class="btn" onclick="salvarConta()">Salvar Lançamento</button>
         </div>
     </div>
 
@@ -689,8 +693,8 @@
                 <div class="modal-title">Limites Planejados por Categoria</div>
                 <button class="icon-btn" onclick="closeModal('modalOrcamento')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="form-group"><label>Casa (Móveis, Cômodos, Manutenção)</label><input type="number" id="orcCasa"></div>
             <div class="form-group"><label>Mercado</label><input type="number" id="orcMercado"></div>
+            <div class="form-group"><label>Casa (Manutenção e Reformas)</label><input type="number" id="orcCasa"></div>
             <div class="form-group"><label>Contas Fixas (Água, Luz, Net)</label><input type="number" id="orcContasFixas"></div>
             <div class="form-group"><label>Lazer</label><input type="number" id="orcLazer"></div>
             <div class="form-group"><label>Tecnologia</label><input type="number" id="orcTecnologia"></div>
@@ -1399,7 +1403,7 @@
             let valor = parseFloat(document.getElementById('contaValor').value) || 0; 
             let vencimento = document.getElementById('contaVencimento').value; 
             let status = document.getElementById('contaStatus').value; 
-            let recorrente = document.getElementById('contaRecorrente').checked;
+            let recorrente = document.getElementById('contaRecorrente').checked; 
             
             if (!nome || valor <= 0) { 
                 alert('Informe a descrição e o valor.'); 
@@ -1426,38 +1430,39 @@
             salvarDados(); 
         };
 
-        // --- ORÇAMENTO POR CATEGORIA (VÍNCULOS ESTRITOS E CORRETOS) ---
+        // --- ORÇAMENTO POR CATEGORIA (INTEGRADO TOTAL: FINANÇAS + CASA) ---
         function renderizarOrcamento() {
             let container = document.getElementById('financasOrcamentoContainer'); 
             container.innerHTML = '';
             
-            // Mapeamento explícito de fontes para cada categoria
-            const categoriasConfig = [
-                { nome: 'Mercado', fonte: 'mercado_casa' },
-                { nome: 'Casa', fonte: 'casa_manutencao' },
-                { nome: 'Contas Fixas', fonte: 'contas_financas' },
-                { nome: 'Lazer', fonte: 'contas_financas' },
-                { nome: 'Tecnologia', fonte: 'contas_financas' }
-            ];
+            const categoriasLista = ['Mercado', 'Casa', 'Contas Fixas', 'Lazer', 'Tecnologia'];
 
-            categoriasConfig.forEach(cat => {
-                let planejado = appData.orcamento[cat.nome] || 0; 
+            categoriasLista.forEach(catNome => {
+                let planejado = appData.orcamento[catNome] || 0; 
                 let totalGasto = 0;
 
-                if (cat.fonte === 'mercado_casa') {
-                    // Puxa estritamente os itens da aba Casa marcados como Mercado
-                    totalGasto = appData.itensCasa
+                if (catNome === 'Mercado') {
+                    // Soma Mercado da aba Casa (cupom fiscal/compras) + Contas pagas de Mercado em Finanças
+                    let gastoCasa = appData.itensCasa
                         .filter(i => i.status === 'Comprado' && i.categoria === 'Mercado')
                         .reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
-                } else if (cat.fonte === 'casa_manutencao') {
-                    // Puxa estritamente compras manuais de manutenção/reparos registradas como Casa
-                    totalGasto = appData.itensCasa
+                    let gastoConta = appData.contas
+                        .filter(c => c.status === 'paga' && c.categoria === 'Mercado')
+                        .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                    totalGasto = gastoCasa + gastoConta;
+                } else if (catNome === 'Casa') {
+                    // Soma Manutenção da aba Casa + Contas pagas de Casa em Finanças
+                    let gastoCasa = appData.itensCasa
                         .filter(i => i.status === 'Comprado' && i.categoria === 'Casa')
                         .reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
-                } else if (cat.fonte === 'contas_financas') {
-                    // Puxa das contas e boletos pagos registrados na aba Finanças
+                    let gastoConta = appData.contas
+                        .filter(c => c.status === 'paga' && c.categoria === 'Casa')
+                        .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                    totalGasto = gastoCasa + gastoConta;
+                } else {
+                    // Contas Fixas, Lazer e Tecnologia: Puxam exclusivamente de Finanças
                     totalGasto = appData.contas
-                        .filter(c => c.status === 'paga' && c.categoria === cat.nome)
+                        .filter(c => c.status === 'paga' && c.categoria === catNome)
                         .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
                 }
 
@@ -1467,7 +1472,7 @@
                 card.className = 'list-card';
                 card.innerHTML = `
                     <div class="list-card-header">
-                        <div class="list-card-title">${cat.nome}</div>
+                        <div class="list-card-title">${catNome}</div>
                         <div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">
                             ${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}
                         </div>
@@ -1624,8 +1629,8 @@
         };
 
         window.openModalOrcamento = function() { 
-            document.getElementById('orcCasa').value = appData.orcamento.Casa; 
             document.getElementById('orcMercado').value = appData.orcamento.Mercado; 
+            document.getElementById('orcCasa').value = appData.orcamento.Casa; 
             document.getElementById('orcContasFixas').value = appData.orcamento['Contas Fixas']; 
             document.getElementById('orcLazer').value = appData.orcamento.Lazer; 
             document.getElementById('orcTecnologia').value = appData.orcamento.Tecnologia; 
