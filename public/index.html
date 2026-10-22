@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App Casal - Organização e Finanças a Dois</title>
+    
+    <!-- Ícone da Aba do Navegador (Favicon do Casal) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👩‍❤️‍👨</text></svg>">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#FF6584">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="App Casal">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Biblioteca para Fogos de Artifício / Confete -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <!-- Biblioteca HTML5 QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF6584;
+            --primary-light: #FFE3E9;
+            --secondary: #6C63FF;
+            --secondary-light: #ECEBFF;
+            --success: #2ECC71;
+            --success-light: #E8F8F0;
+            --danger: #E74C3C;
+            --danger-light: #FADBD8;
+            --warning: #F1C40F;
+            --warning-light: #FEF9E7;
+            --info: #3498DB;
+            --info-light: #EBF5FB;
+            --dark: #2C3E50;
+            --light: #F8F9FA;
+            --gray: #95A5A6;
+            --gray-light: #ECF0F1;
+            --border: #E2E8F0;
+            --bg-body: #F4F7F6;
+            --bg-card: #FFFFFF;
+            --text-color: #2C3E50;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-card: #1E1E1E;
+            --text-color: #E0E0E0;
+            --gray: #A0A0A0;
+            --gray-light: #2A2A2A;
+            --border: #333333;
+            --light: #252525;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-color);
+            padding-bottom: 90px;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* --- TELA DE BOAS VINDAS --- */
+        .welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(-45deg, #FF6584, #6C63FF, #3498DB, #FF8E53);
+            background-size: 400% 400%;
+            animation: gradientBG 8s ease infinite;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .welcome-content {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            max-width: 85%;
+            transform: translateY(0);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .welcome-icon { 
+            font-size: 60px; 
+            margin-bottom: 15px; 
+            color: white;
+            animation: heartbeat 1.5s infinite; 
+        }
+
+        @keyframes heartbeat { 
+            0% { transform: scale(1); } 
+            15% { transform: scale(1.2); } 
+            30% { transform: scale(1); } 
+            45% { transform: scale(1.2); } 
+            100% { transform: scale(1); } 
+        }
+
+        .welcome-content h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .welcome-content p { font-size: 15px; opacity: 0.9; margin-bottom: 24px; }
+
+        .btn-entrar {
+            background: white; color: var(--secondary); font-size: 16px; font-weight: 700;
+            padding: 14px 40px; border-radius: 30px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-entrar:active { transform: scale(0.95); }
+
+        header {
+            background: var(--bg-card); padding: 16px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+        }
+
+        .app-brand { display: flex; align-items: center; gap: 10px; }
+        .app-brand i { font-size: 24px; color: var(--primary); background: var(--primary-light); padding: 10px; border-radius: 12px; }
+        .app-brand h1 { font-size: 18px; font-weight: 700; color: var(--text-color); }
+        .app-brand span { font-size: 11px; color: var(--gray); display: block; }
+        .container { padding: 16px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        nav.bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+            background: var(--bg-card); display: flex; justify-content: space-around;
+            padding: 10px 4px; border-top: 1px solid var(--border); z-index: 1000; box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; background: none; border: none;
+            color: var(--gray); font-size: 10px; font-weight: 500; gap: 4px; cursor: pointer; transition: var(--transition); flex: 1;
+        }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--text-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .balance-hero {
+            background: linear-gradient(135deg, #FF6584, #FF8E53); color: white; border-radius: var(--radius); padding: 22px;
+            margin-bottom: 16px; box-shadow: 0 8px 20px rgba(255, 101, 132, 0.25); position: relative; overflow: hidden;
+        }
+        .balance-hero::after { content: '\f53a'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -10px; bottom: -20px; font-size: 100px; opacity: 0.15; }
+        .balance-hero .label { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+        .balance-hero .amount { font-size: 32px; font-weight: 700; margin: 6px 0 16px 0; }
+        .balance-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 12px; }
+
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .metric-card { background: var(--bg-card); padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .metric-card .m-title { font-size: 11px; color: var(--gray); font-weight: 600; text-transform: uppercase; }
+        .metric-card .m-value { font-size: 15px; font-weight: 700; color: var(--text-color); margin-top: 4px; }
+        .metric-card.success .m-value { color: var(--success); }
+        .metric-card.danger .m-value { color: var(--danger); }
+        .metric-card.info .m-value { color: var(--info); }
+        .metric-card.warning .m-value { color: #d97706; }
+
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--text-color); margin-bottom: 6px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 14px; background: var(--light); color: var(--text-color); outline: none; transition: var(--transition);
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 0 0 3px rgba(255, 101, 132, 0.15); }
+
+        .btn {
+            width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: var(--transition); box-shadow: 0 4px 12px rgba(255, 101, 132, 0.2);
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-secondary { background: var(--secondary); box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-qr { background: linear-gradient(135deg, #6C63FF, #8A85FF); box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25); color: white; }
+        .btn-sm { padding: 8px 12px; font-size: 12px; width: auto; }
+
+        .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-urgent { background: var(--danger-light); color: var(--danger); }
+        .badge-important { background: var(--warning-light); color: #D4AC0D; }
+        .badge-waiting { background: var(--success-light); color: var(--success); }
+        .badge-status-pending { background: var(--warning-light); color: #B7950B; }
+        .badge-status-planned { background: var(--info-light); color: var(--info); }
+        .badge-status-bought { background: var(--success-light); color: var(--success); }
+
+        .item-list { display: flex; flex-direction: column; gap: 10px; }
+        .list-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); }
+        .list-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .list-card-title { font-size: 14px; font-weight: 700; color: var(--text-color); }
+        .list-card-details { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--gray); border-top: 1px dashed var(--border); padding-top: 6px; }
+        .action-icon-group { display: flex; gap: 8px; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--gray); padding: 4px; }
+        .icon-btn.check:hover { color: var(--success); }
+        .icon-btn.delete:hover { color: var(--danger); }
+        .icon-btn.edit:hover { color: var(--info); }
+
+        .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+        .filter-chips::-webkit-scrollbar { display: none; }
+        .chip { background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; white-space: nowrap; cursor: pointer; color: var(--text-color); font-weight: 500; }
+        .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .progress-container { width: 100%; background: var(--gray-light); border-radius: 10px; height: 8px; overflow: hidden; margin: 6px 0; }
+        .progress-bar { height: 100%; background: var(--success); border-radius: 10px; transition: width 0.5s ease; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-card); color: var(--text-color); border-radius: var(--radius); width: 100%; max-width: 440px; padding: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .modal-title { font-size: 16px; font-weight: 700; }
+        .empty-state { text-align: center; padding: 24px 16px; color: var(--gray); font-size: 13px; }
+        .cofrinho-alert { background: var(--warning-light); border: 1px solid var(--warning); color: #856404; padding: 10px 14px; border-radius: 10px; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+
+        #qrReaderBox {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #000;
+            border: 2px dashed var(--secondary);
+            min-height: 250px;
+        }
+        #qrReaderBox video {
+            object-fit: cover !important;
+            border-radius: 12px;
+        }
+        .scanned-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .scanned-item-row:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+    <!-- TELA DE BOAS VINDAS -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <i class="fa-solid fa-heart-pulse welcome-icon"></i>
+            <h2>Bem-vindo, Casal!</h2>
+            <p>Bora às economias e compras. O futuro de vocês começa aqui.</p>
+            <button class="btn-entrar" onclick="entrarApp()">Entrar</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="app-brand">
+            <i class="fa-solid fa-house-heart"></i>
+            <div>
+                <h1>App Casal</h1>
+                <span>Organização & Finanças</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button onclick="toggleDarkMode()" class="icon-btn" id="darkModeBtn" title="Alternar Modo Escuro" style="font-size: 16px; padding: 8px; background: var(--light); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ABA 1: HOME -->
+        <section id="tab-home" class="tab-content active">
+            
+            <div id="cofrinhoNotice" style="display: none;" class="cofrinho-alert">
+                <i class="fa-solid fa-piggy-bank" style="font-size: 20px;"></i>
+                <div>
+                    <b>Aviso PicPay:</b> As despesas projetadas superam a renda. Será preciso resgatar <b id="lblValorCofrinho">R$ 0,00</b> do cofrinho.
+                </div>
+            </div>
+
+            <div class="balance-hero">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div class="label">Saldo em Caixa (Livre no Momento)</div>
+                        <div class="amount" id="lblSaldoAtual">R$ 0,00</div>
+                    </div>
+                </div>
+                <div class="balance-meta">
+                    <div><i class="fa-regular fa-calendar"></i> <span id="lblUltimaData">--/--/----</span></div>
+                    <div><i class="fa-solid fa-piggy-bank"></i> PicPay: <span id="lblPicpayStatus">50% guardado</span></div>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="m-title">Entradas do Mês</div>
+                    <div class="m-value" id="lblRendaTotal">R$ 0,00</div>
+                </div>
+                <div class="metric-card info">
+                    <div class="m-title">Já Pago no Mês</div>
+                    <div class="m-value" id="lblGastosMes">R$ 0,00</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="m-title">A Pagar (A Vencer)</div>
+                    <div class="m-value" id="lblContasPendentes">R$ 0,00</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="m-title">Contas Vencidas</div>
+                    <div class="m-value" id="lblContasVencidas">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-chart-pie"></i> Comprometimento da Renda</span>
+                    <span id="lblStatusOrcamentoBadge" class="badge badge-waiting">Dentro do Teto</span>
+                </div>
+                <div style="font-size: 12px; color: var(--gray); margin-bottom: 8px;" id="lblResumoOrcamentoTexto">Monitorando contas pagas e a vencer.</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="barSaudeFinanceira" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-timeline"></i> Atividade do Casal</span></div>
+                <div id="homeActivityLogContainer" class="item-list"></div>
+            </div>
+        </section>
+
+        <!-- ABA 2: CASA COM LEITOR DE QR CODE -->
+        <section id="tab-casa" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: gap; gap: 8px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-couch"></i> Itens & Necessidades</h2>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-qr btn-sm" onclick="abrirModalScannerQR()" title="Ler cupom ou lista via QR Code">
+                        <i class="fa-solid fa-qrcode"></i> Ler QR Code
+                    </button>
+                    <button class="btn btn-sm" onclick="openModalItemCasa()">
+                        <i class="fa-solid fa-plus"></i> Novo
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-chips" id="casaFilterChips">
+                <div class="chip active" onclick="filterCasa('todos', this)">Todos</div>
+                <div class="chip" onclick="filterCasa('Mercado', this)">🛒 Mercado</div>
+                <div class="chip" onclick="filterCasa('Cozinha', this)">🍳 Cozinha</div>
+                <div class="chip" onclick="filterCasa('Quarto', this)">🛏️ Quarto</div>
+                <div class="chip" onclick="filterCasa('Banheiro', this)">🚿 Banheiro</div>
+                <div class="chip" onclick="filterCasa('Sala', this)">🛋️ Sala</div>
+                <div class="chip" onclick="filterCasa('Tecnologia', this)">💻 Tecnologia</div>
+                <div class="chip" onclick="filterCasa('Lavanderia', this)">🧺 Lavanderia</div>
+                <div class="chip" onclick="filterCasa('Lazer', this)">🎮 Lazer</div>
+            </div>
+
+            <div class="item-list" id="casaListContainer"></div>
+        </section>
+
+        <!-- ABA 3: FINANÇAS -->
+        <section id="tab-financas" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-wallet"></i> Contas & Teto Mensal</h2>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-outline btn-sm" onclick="openModalRenda()">Entradas</button>
+                    <button class="btn btn-sm" onclick="openModalConta()">Nova Conta</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-file-invoice-dollar"></i> Contas Fixas e Boletos</span>
+                </div>
+                <div class="item-list" id="financasContasContainer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-scale-balanced"></i> Orçamento por Categoria</span>
+                    <button class="icon-btn" onclick="openModalOrcamento()"><i class="fa-solid fa-gear"></i></button>
+                </div>
+                <div class="item-list" id="financasOrcamentoContainer"></div>
+            </div>
+        </section>
+
+        <!-- ABA 4: OBJETIVOS -->
+        <section id="tab-objetivos" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-bullseye"></i> Metas do Casal</h2>
+                <button class="btn btn-sm" onclick="openModalObjetivo()">
+                    <i class="fa-solid fa-plus"></i> Nova Meta
+                </button>
+            </div>
+            <div class="item-list" id="objetivosContainer"></div>
+        </section>
+
+        <!-- ABA 5: AJUSTES -->
+        <section id="tab-config" class="tab-content">
+            <div class="card">
+                <div class="card-title"><span><i class="fa-solid fa-users-gear"></i> Configurações</span></div>
+                <div class="form-group">
+                    <label>Nome do Parceiro 1</label>
+                    <input type="text" id="inputNomeP1" value="Jhonatan" onchange="atualizarNomeP1(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Nome do Parceiro 2</label>
+                    <input type="text" id="inputNomeP2" value="Thayna" onchange="atualizarNomeP2(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>URL da API Python (Render/ngrok)</label>
+                    <input type="text" id="inputApiPythonUrl" placeholder="https://api-nfe-casal.onrender.com" onchange="salvarConfigApi(this.value)">
+                    <span style="font-size: 10px; color: var(--gray);">Deixe em branco para usar a rota padrão do Render.</span>
+                </div>
+                <button class="btn btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-download"></i> Backup JSON</button>
+                <button class="btn btn-outline" style="margin-top: 8px; border-color: var(--danger); color: var(--danger);" onclick="resetarDados()"><i class="fa-solid fa-trash-can"></i> Limpar Geral (App e Nuvem)</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Barra de Navegação -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('home', this)">
+            <i class="fa-solid fa-house"></i><span>Início</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('casa', this)">
+            <i class="fa-solid fa-couch"></i><span>Casa</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('financas', this)">
+            <i class="fa-solid fa-wallet"></i><span>Finanças</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('objetivos', this)">
+            <i class="fa-solid fa-bullseye"></i><span>Metas</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('config', this)">
+            <i class="fa-solid fa-gear"></i><span>Ajustes</span>
+        </button>
+    </nav>
+
+    <!-- MODAIS -->
+
+    <!-- Modal Leitor de QR Code -->
+    <div class="modal-overlay" id="modalScannerQR">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-qrcode" style="color: var(--secondary);"></i> Ler QR Code / Cupom</div>
+                <button class="icon-btn" onclick="fecharModalScannerQR()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
+                Aponte para o QR Code da nota fiscal ou para um código gerado na tela:
+            </p>
+
+            <div id="qrReaderBox"></div>
+
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <label class="btn btn-outline btn-sm" style="width: 100%; cursor: pointer;">
+                    <i class="fa-solid fa-image"></i> Escolher Foto do QR Code
+                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="lerArquivoImagemQR(event)">
+                </label>
+                <button class="btn btn-secondary btn-sm" onclick="alternarCamera()">
+                    <i class="fa-solid fa-camera-rotate"></i> Alternar Câmera
+                </button>
+                <button class="btn btn-outline btn-sm" style="border-color: var(--secondary); color: var(--secondary);" onclick="abrirModalColarTexto()">
+                    <i class="fa-solid fa-paste"></i> Colar Texto Copiado da Fazenda
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Colar Texto Manual -->
+    <div class="modal-overlay" id="modalColarTexto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-paste" style="color: var(--secondary);"></i> Colar Lista da Fazenda</div>
+                <button class="icon-btn" onclick="closeModal('modalColarTexto')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p style="font-size: 12px; color: var(--gray); margin-bottom: 8px;">
+                Cole aqui as linhas copiadas da SEFAZ. Todos os itens irão automaticamente para <b>Mercado</b>:
+            </p>
+            <textarea id="txtManualFazenda" rows="8" placeholder="BAT PALHA YOKI 105G (Código: 1136513)&#10;Qtde.:2   UN: Un   Vl. Unit.:   5,99&#10;11,98..."></textarea>
+            <button class="btn" style="margin-top: 10px;" onclick="processarTextoManualColado()">
+                <i class="fa-solid fa-gears"></i> Processar e Revisar Itens
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Revisão dos Itens Escaneados -->
+    <div class="modal-overlay" id="modalRevisaoQR">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-clipboard-check" style="color: var(--success);"></i> Itens Reconhecidos (Mercado)</div>
+                <button class="icon-btn" onclick="closeModal('modalRevisaoQR')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div style="background: var(--light); padding: 10px; border-radius: 10px; margin-bottom: 12px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Produtos Detectados:</span>
+                    <b id="lblQtdDetectada">0</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                    <span>Total da Compra:</span>
+                    <b id="lblTotalDetectado" style="color: var(--primary);">R$ 0,00</b>
+                </div>
+            </div>
+
+            <div style="max-height: 280px; overflow-y: auto; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px;" id="scannedItemsListPreview">
+                <!-- Itens preenchidos dinamicamente -->
+            </div>
+
+            <button class="btn" onclick="confirmarImportacaoItensQR()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Importar Todos para Casa
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Item Casa (Com Quantidade, Unitário e Cálculo Automático) -->
+    <div class="modal-overlay" id="modalItemCasa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalItemCasaTitle">Novo Item / Compra</div>
+                <button class="icon-btn" onclick="closeModal('modalItemCasa')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Nome do Item / Compra</label>
+                <input type="text" id="itemNome" placeholder="Ex: Panela, Compra Semanal...">
+            </div>
+            <div class="form-group">
+                <label>Quantidade</label>
+                <input type="number" id="itemQuantidade" min="1" value="1" placeholder="1" oninput="calcularTotalModalItem()">
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="itemCategoria">
+                    <option value="Mercado">🛒 Mercado / Supermercado</option>
+                    <option value="Casa">🏠 Manutenção da Casa / Reformas</option>
+                    <option value="Cozinha">🍳 Cozinha</option>
+                    <option value="Quarto">🛏️ Quarto</option>
+                    <option value="Banheiro">🚿 Banheiro</option>
+                    <option value="Sala">🛋️ Sala</option>
+                    <option value="Tecnologia">💻 Tecnologia</option>
+                    <option value="Lavanderia">🧺 Lavanderia</option>
+                    <option value="Lazer">🎮 Lazer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="itemStatus">
+                    <option value="Comprado" selected>Comprado</option>
+                    <option value="Pendente">Pendente / Desejo</option>
+                    <option value="Planejado">Planejado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Valor Unitário (R$)</label>
+                <input type="number" id="itemValorReal" step="0.01" placeholder="Ex: 5.99" oninput="calcularTotalModalItem()">
+                <span style="font-size: 11px; color: var(--gray); display: block; margin-top: 4px;">
+                    Total calculado: <b id="lblPreviaTotalItem" style="color: var(--primary);">R$ 0,00</b>
+                </span>
+            </div>
+            <button class="btn" onclick="salvarItemCasa()">Salvar Registro</button>
+        </div>
+    </div>
+
+    <!-- Modal Nova Conta (Alinhado com as 5 Categorias do Orçamento) -->
+    <div class="modal-overlay" id="modalConta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Cadastrar Conta / Lançamento</div>
+                <button class="icon-btn" onclick="closeModal('modalConta')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="contaNome" placeholder="Ex: Internet, Aluguel, Cinema, Supermercado...">
+            </div>
+            <div class="form-group">
+                <label>Categoria de Orçamento</label>
+                <select id="contaCategoria">
+                    <option value="Contas Fixas">Contas Fixas (Água, Luz, Net, Aluguel)</option>
+                    <option value="Mercado">Mercado (Compras, Feira, Açougue)</option>
+                    <option value="Casa">Casa (Manutenção, Reformas, Reparos)</option>
+                    <option value="Lazer">Lazer (Passeios, Cinema, Jogos, Saídas)</option>
+                    <option value="Tecnologia">Tecnologia (Streaming, Peças, Upgrades)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="contaValor" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Vencimento / Data</label>
+                <input type="date" id="contaVencimento">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="contaStatus">
+                    <option value="pendente">Pendente (A pagar)</option>
+                    <option value="paga">Paga (Já debitada)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: var(--info-light); padding: 12px; border-radius: 10px; border: 1px dashed var(--info);">
+                <input type="checkbox" id="contaRecorrente" style="width: auto; transform: scale(1.2);" checked>
+                <label style="margin: 0; color: var(--info); font-weight: 700;">Conta Fixa? (Repete todo mês)</label>
+            </div>
+
+            <button class="btn" onclick="salvarConta()">Salvar Lançamento</button>
+        </div>
+    </div>
+
+    <!-- Modal Rendas (Apenas Dia 20 + Extras) -->
+    <div class="modal-overlay" id="modalRenda">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Entradas do Mês (Dia 20)</div>
+                <button class="icon-btn" onclick="closeModal('modalRenda')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <p style="font-size: 11px; color: var(--gray); margin-bottom: 12px;">
+                Coloque aqui apenas o valor que vai para o <b>teto de gastos</b>. Os 50% guardados no PicPay ficam como reserva estratégica.
+            </p>
+
+            <h3 style="font-size: 12px; color: var(--primary); margin-bottom: 6px;">Recebimento Dia 20</h3>
+            <div class="form-group">
+                <label><span id="lblRendaP1_20">Jhonatan</span> (Dia 20)</label>
+                <div style="display: flex; gap: 6px;">
+                    <input type="number" id="rendaP1_20" step="0.01" placeholder="0.00">
+                    <button class="btn btn-outline btn-sm" onclick="aplicar50Porcento('rendaP1_20')" title="Aplica 50% do valor digitado">50%</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span id="lblRendaP2_20">Thayna</span> (Dia 20)</label>
+                <div style="display: flex; gap: 6px;">
+                    <input type="number" id="rendaP2_20" step="0.01" placeholder="0.00">
+                    <button class="btn btn-outline btn-sm" onclick="aplicar50Porcento('rendaP2_20')" title="Aplica 50% do valor digitado">50%</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Sobras Antigas / Extras (Usado para quitar compras antes do dia 20)</label>
+                <input type="number" id="rendaExtra" step="0.01" placeholder="0.00">
+            </div>
+
+            <button class="btn" onclick="salvarRenda()">Atualizar Entradas</button>
+        </div>
+    </div>
+
+    <!-- Modal Orçamento -->
+    <div class="modal-overlay" id="modalOrcamento">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Limites Planejados por Categoria</div>
+                <button class="icon-btn" onclick="closeModal('modalOrcamento')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group"><label>Mercado</label><input type="number" id="orcMercado"></div>
+            <div class="form-group"><label>Casa (Manutenção e Reformas)</label><input type="number" id="orcCasa"></div>
+            <div class="form-group"><label>Contas Fixas (Água, Luz, Net)</label><input type="number" id="orcContasFixas"></div>
+            <div class="form-group"><label>Lazer</label><input type="number" id="orcLazer"></div>
+            <div class="form-group"><label>Tecnologia</label><input type="number" id="orcTecnologia"></div>
+            <button class="btn" onclick="salvarOrcamento()">Salvar Limites</button>
+        </div>
+    </div>
+
+    <!-- Modal Metas -->
+    <div class="modal-overlay" id="modalObjetivo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalObjetivoTitle">Nova Meta do Casal</div>
+                <button class="icon-btn" onclick="closeModal('modalObjetivo')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group"><label>Nome da Meta</label><input type="text" id="objNome" placeholder="Ex: Sofá novo"></div>
+            <div class="form-group"><label>Valor Alvo (R$)</label><input type="number" id="objValorDesejado"></div>
+            <div class="form-group"><label>Valor no Cofrinho/Reserva (R$)</label><input type="number" id="objValorGuardado"></div>
+            <button class="btn" onclick="salvarObjetivo()">Salvar Meta</button>
+        </div>
+    </div>
+
+    <!-- Firebase App Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDu2E1Wxa7AGUhmpGkJ_OxnGGyEWnHHyqs",
+            authDomain: "appcasal-f98c5.firebaseapp.com",
+            projectId: "appcasal-f98c5",
+            storageBucket: "appcasal-f98c5.firebasestorage.app",
+            messagingSenderId: "538080655469",
+            appId: "1:538080655469:web:8772936e5ea7133c7d6764",
+            measurementId: "G-TP4WGE57QN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.dbRef = db;
+        window.docRef = doc(db, "dados", "app_casal");
+
+        window.appData = {
+            nomeP1: 'Jhonatan',
+            nomeP2: 'Thayna',
+            darkMode: false,
+            apiPythonUrl: '',
+            mesReferencia: new Date().getMonth(),
+            renda: { p1_20: 493.00, p2_20: 0, extra: 0 },
+            orcamento: { Casa: 300, Mercado: 600, 'Contas Fixas': 500, Lazer: 200, Tecnologia: 100 },
+            itensCasa: [],
+            contas: [],
+            objetivos: [],
+            atividades: []
+        };
+
+        window.salvarDados = async function() {
+            try { await setDoc(window.docRef, window.appData); } catch (e) { console.error("Erro Firebase:", e); }
+            localStorage.setItem('app_casal_data_v1', JSON.stringify(window.appData));
+            window.atualizarInterface();
+        };
+
+        onSnapshot(window.docRef, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().nomeP1) {
+                window.appData = docSnap.data();
+            } else {
+                const saved = localStorage.getItem('app_casal_data_v1');
+                if (saved) { try { window.appData = JSON.parse(saved); } catch(e) {} }
+                window.salvarDados();
+            }
+            sincronizarConfigNomes();
+            verificarViradaDeMes(); 
+            window.atualizarInterface();
+        });
+
+        function sincronizarConfigNomes() {
+            if(document.getElementById('inputNomeP1')) {
+                document.getElementById('inputNomeP1').value = window.appData.nomeP1 || 'Jhonatan';
+                document.getElementById('inputNomeP2').value = window.appData.nomeP2 || 'Thayna';
+                document.getElementById('lblRendaP1_20').innerText = window.appData.nomeP1 || 'Jhonatan';
+                document.getElementById('lblRendaP2_20').innerText = window.appData.nomeP2 || 'Thayna';
+                if (document.getElementById('inputApiPythonUrl')) {
+                    document.getElementById('inputApiPythonUrl').value = window.appData.apiPythonUrl || '';
+                }
+            }
+        }
+    </script>
+
+    <script>
+        let editMetaId = null;
+        let editItemCasaId = null;
+        let html5QrScanner = null;
+        let scannerCameraFacing = "environment";
+        let itensDetectadosTemp = [];
+
+        window.entrarApp = function() {
+            let ws = document.getElementById('welcomeScreen');
+            ws.style.opacity = '0';
+            setTimeout(() => { ws.style.display = 'none'; }, 800);
+
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9000 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        };
+
+        function normalizarCategoria(cat) { 
+            const comodos = ['Cozinha', 'Quarto', 'Banheiro', 'Sala', 'Lavanderia']; 
+            if (comodos.includes(cat)) return 'Casa'; 
+            return cat; 
+        }
+
+        window.aplicar50Porcento = function(inputId) {
+            let elem = document.getElementById(inputId); 
+            let val = parseFloat(elem.value);
+            if (!val || isNaN(val)) { val = 1000.00; }
+            let metade = (val / 2).toFixed(2); 
+            elem.value = metade;
+        };
+
+        window.switchTab = function(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            if (el) el.classList.add('active'); 
+            window.scrollTo(0, 0);
+        };
+
+        window.toggleDarkMode = function() {
+            appData.darkMode = !appData.darkMode;
+            document.body.classList.toggle('dark-mode', appData.darkMode);
+            document.getElementById('darkModeBtn').innerHTML = appData.darkMode ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            salvarDados();
+        };
+
+        window.atualizarNomeP1 = function(val) { appData.nomeP1 = val; salvarDados(); };
+        window.atualizarNomeP2 = function(val) { appData.nomeP2 = val; salvarDados(); };
+        window.salvarConfigApi = function(val) { appData.apiPythonUrl = val.trim(); salvarDados(); };
+
+        // CÁLCULO FINANCEIRO CORRIGIDO (Soma os dois parceiros no dia 20 + extras)
+        function calcularFinancas() {
+            let r = appData.renda;
+            let rendaTotal = (parseFloat(r.p1_20) || 0) + (parseFloat(r.p2_20) || 0) + (parseFloat(r.extra) || 0);
+            let gastosItens = appData.itensCasa.filter(i => i.status === 'Comprado').reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
+            let contasPagas = appData.contas.filter(c => c.status === 'paga').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+            let contasPendentes = appData.contas.filter(c => c.status === 'pendente').reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+            let hoje = new Date().toISOString().split('T')[0];
+            let contasVencidas = appData.contas.filter(c => c.status === 'pendente' && c.vencimento && c.vencimento < hoje).reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+            let totalPago = gastosItens + contasPagas;
+            let compromissoTotal = totalPago + contasPendentes;
+            let sobraEstimada = rendaTotal - compromissoTotal;
+            return { rendaTotal, totalPago, contasPendentes, contasVencidas, compromissoTotal, sobraEstimada };
+        }
+
+        function verificarViradaDeMes() {
+            let mesAtualReal = new Date().getMonth();
+            if (appData.mesReferencia === undefined) { appData.mesReferencia = mesAtualReal; salvarDados(); return; }
+            if (appData.mesReferencia !== mesAtualReal) {
+                const fin = calcularFinancas(); 
+                let sobraDoMesPassado = fin.sobraEstimada > 0 ? fin.sobraEstimada : 0;
+                if (sobraDoMesPassado > 0) { appData.renda.extra = (parseFloat(appData.renda.extra) || 0) + sobraDoMesPassado; }
+                appData.contas = appData.contas.filter(c => c.status === 'pendente' || c.recorrente);
+                appData.contas.forEach(c => {
+                    if (c.recorrente) {
+                        c.status = 'pendente';
+                        if (c.vencimento) { 
+                            let d = new Date(c.vencimento); 
+                            d.setMonth(d.getMonth() + 1); 
+                            c.vencimento = d.toISOString().split('T')[0]; 
+                        }
+                    }
+                });
+                appData.itensCasa = appData.itensCasa.filter(i => i.status !== 'Comprado');
+                appData.mesReferencia = mesAtualReal;
+                registrarAtividade(`🔄 Mês virou! Sobra de ${formatarMoeda(sobraDoMesPassado)} repassada.`);
+                salvarDados();
+            }
+        }
+
+        window.atualizarInterface = function() {
+            const fin = calcularFinancas();
+            document.getElementById('lblSaldoAtual').innerText = formatarMoeda(fin.sobraEstimada);
+            document.getElementById('lblUltimaData').innerText = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('lblRendaTotal').innerText = formatarMoeda(fin.rendaTotal);
+            document.getElementById('lblGastosMes').innerText = formatarMoeda(fin.totalPago);
+            document.getElementById('lblContasPendentes').innerText = formatarMoeda(fin.contasPendentes - fin.contasVencidas); 
+            document.getElementById('lblContasVencidas').innerText = formatarMoeda(fin.contasVencidas); 
+
+            let notice = document.getElementById('cofrinhoNotice');
+            if (fin.sobraEstimada < 0) { 
+                notice.style.display = 'flex'; 
+                document.getElementById('lblValorCofrinho').innerText = formatarMoeda(Math.abs(fin.sobraEstimada)); 
+            } else { 
+                notice.style.display = 'none'; 
+            }
+
+            let pctComprometida = fin.rendaTotal > 0 ? (fin.compromissoTotal / fin.rendaTotal) * 100 : 0;
+            document.getElementById('barSaudeFinanceira').style.width = Math.min(pctComprometida, 100) + '%';
+            
+            let badge = document.getElementById('lblStatusOrcamentoBadge'); 
+            let resumo = document.getElementById('lblResumoOrcamentoTexto');
+            if (pctComprometida > 100) { 
+                badge.className = 'badge badge-urgent'; 
+                badge.innerText = 'Excedido (Usar PicPay)'; 
+                resumo.innerText = `Compromissos superam as entradas em ${formatarMoeda(Math.abs(fin.sobraEstimada))}.`; 
+            } else if (pctComprometida > 85) { 
+                badge.className = 'badge badge-important'; 
+                badge.innerText = 'No Limite'; 
+                resumo.innerText = `${pctComprometida.toFixed(0)}% do orçamento comprometido.`; 
+            } else { 
+                badge.className = 'badge badge-waiting'; 
+                badge.innerText = 'Dentro do Teto'; 
+                resumo.innerText = `Sobra livre prevista de ${formatarMoeda(fin.sobraEstimada)}.`; 
+            }
+
+            if (appData.darkMode) document.body.classList.add('dark-mode');
+            renderizarItensCasa(); 
+            renderizarContas(); 
+            renderizarOrcamento(); 
+            renderizarObjetivos(); 
+            renderizarAtividades();
+        };
+
+        // --- SCANNER E PARSER (FORÇANDO 100% PARA MERCADO) ---
+        function deduzirCategoria(nome) {
+            return 'Mercado';
+        }
+
+        function parseQrText(rawText) {
+            let items = [];
+            let lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+            let i = 0;
+            while (i < lines.length) {
+                let line = lines[i];
+
+                // Padrão PIPE ultraleve: Qtd|Total|Nome
+                if (line.includes('|')) {
+                    let p = line.split('|');
+                    if (p.length >= 3) {
+                        let qtd = parseInt(p[0]) || 1;
+                        let total = parseFloat(p[1].replace(',', '.')) || 0;
+                        let nome = p[2].trim();
+                        items.push({
+                            nome: nome,
+                            quantidade: qtd,
+                            valorTotal: total,
+                            categoria: 'Mercado'
+                        });
+                        i++;
+                        continue;
+                    }
+                }
+
+                // Padrão 1: TSV Compacto (qtd \t valor \t categoria \t nome)
+                if (line.includes('\t')) {
+                    let p = line.split('\t');
+                    if (p.length >= 4) {
+                        items.push({
+                            quantidade: parseInt(p[0]) || 1,
+                            valorTotal: parseFloat(p[1].replace(',', '.')) || 0,
+                            categoria: 'Mercado',
+                            nome: p[3].trim()
+                        });
+                        i++;
+                        continue;
+                    }
+                }
+
+                // Padrão 2: Bloco impresso da Fazenda (Nome na linha i-1, Qtde na linha i, Total na linha i+1)
+                let regexQtde = /Qtde\.?:\s*([0-9.,]+).*?Vl\.?\s*Unit\.?:\s*([0-9.,]+)/i;
+                if (regexQtde.test(line)) {
+                    let nome = (i > 0) ? lines[i - 1].replace(/\(Código.*?\)/i, '').trim() : "Item Desconhecido";
+                    let match = line.match(regexQtde);
+                    let qtd = parseFloat(match[1].replace(',', '.')) || 1;
+                    let vlUnit = parseFloat(match[2].replace(',', '.')) || 0;
+                    
+                    let vlTotal = (qtd * vlUnit);
+                    if (i + 1 < lines.length && /^[0-9.,]+$/.test(lines[i + 1])) {
+                        let parsedTotal = parseFloat(lines[i + 1].replace(',', '.'));
+                        if (!isNaN(parsedTotal) && parsedTotal > 0) {
+                            vlTotal = parsedTotal;
+                        }
+                    }
+
+                    items.push({
+                        nome: nome,
+                        quantidade: qtd,
+                        valorTotal: vlTotal,
+                        categoria: 'Mercado'
+                    });
+                } else if (/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i.test(line)) {
+                    // Padrão 3: Linha simples (16x TRENTO 29G - R$ 39,84)
+                    let m = line.match(/^([0-9]+)x\s+(.*?)\s*-\s*R\$\s*([0-9.,]+)/i);
+                    let qtd = parseInt(m[1]) || 1;
+                    let nome = m[2].trim();
+                    let vlTotal = parseFloat(m[3].replace(',', '.')) || 0;
+                    items.push({
+                        nome: nome,
+                        quantidade: qtd,
+                        valorTotal: vlTotal,
+                        categoria: 'Mercado'
+                    });
+                }
+                i++;
+            }
+
+            // Agrupa itens repetidos somando quantidade e valor total
+            let mapa = new Map();
+            items.forEach(it => {
+                let key = it.nome.toUpperCase();
+                if (mapa.has(key)) {
+                    let existing = mapa.get(key);
+                    existing.quantidade += it.quantidade;
+                    existing.valorTotal += it.valorTotal;
+                } else {
+                    mapa.set(key, { ...it });
+                }
+            });
+
+            return Array.from(mapa.values());
+        }
+
+        window.abrirModalScannerQR = function() {
+            openModal('modalScannerQR');
+            iniciarScannerCamera();
+        };
+
+        window.fecharModalScannerQR = function() {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+        };
+
+        function iniciarScannerCamera() {
+            if (html5QrScanner) {
+                try { html5QrScanner.stop(); } catch(e) {}
+            }
+            html5QrScanner = new Html5Qrcode("qrReaderBox");
+            const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+            html5QrScanner.start(
+                { facingMode: scannerCameraFacing },
+                config,
+                onQrCodeDetectado,
+                onQrCodeErro
+            ).catch(err => {
+                console.warn("Câmera não iniciada diretamente:", err);
+            });
+        }
+
+        function pararScannerCamera() {
+            if (html5QrScanner) {
+                try {
+                    html5QrScanner.stop().then(() => { html5QrScanner.clear(); });
+                } catch(e) {}
+            }
+        }
+
+        window.alternarCamera = function() {
+            scannerCameraFacing = (scannerCameraFacing === "environment") ? "user" : "environment";
+            iniciarScannerCamera();
+        };
+
+        window.lerArquivoImagemQR = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new Html5Qrcode("qrReaderBox");
+            reader.scanFile(file, true)
+                .then(decodedText => {
+                    onQrCodeDetectado(decodedText);
+                })
+                .catch(err => {
+                    alert("Não foi possível detectar um QR Code legível na imagem. Tente uma foto mais nítida.");
+                });
+        };
+
+        async function onQrCodeDetectado(decodedText) {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+
+            // 1. Se for um link direto para JSON na nuvem
+            if (decodedText.includes("npoint.io") || decodedText.endsWith(".json")) {
+                try {
+                    const resp = await fetch(decodedText);
+                    const dados = await resp.json();
+                    
+                    if (Array.isArray(dados)) {
+                        itensDetectadosTemp = dados.map(item => ({
+                            nome: item.nome,
+                            quantidade: item.qtd || item.quantidade || 1,
+                            valorTotal: item.total || item.valorTotal || item.valorReal || 0,
+                            categoria: 'Mercado'
+                        }));
+                        exibirRevisaoItens(itensDetectadosTemp);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn("Falha ao puxar JSON direto:", err);
+                }
+            }
+
+            // 2. Se for link oficial da Fazenda/SEFAZ
+            if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+                let urlBaseApi = (appData.apiPythonUrl || "https://api-nfe-casal.onrender.com").trim();
+                if (urlBaseApi.endsWith("/")) urlBaseApi = urlBaseApi.slice(0, -1);
+                
+                let confirmou = confirm("Link fiscal detectado!\n\nDeseja consultar os produtos na Fazenda via API Python?");
+                if (!confirmou) return;
+
+                try {
+                    const resposta = await fetch(`${urlBaseApi}/consultar-nfe`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: decodedText })
+                    });
+
+                    if (!resposta.ok) {
+                        const errData = await resposta.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Falha na resposta do servidor");
+                    }
+
+                    const dados = await resposta.json();
+                    if (dados.itens && dados.itens.length > 0) {
+                        itensDetectadosTemp = dados.itens.map(i => ({
+                            nome: i.nome,
+                            quantidade: i.quantidade || 1,
+                            valorTotal: i.valorReal,
+                            categoria: 'Mercado'
+                        }));
+                        exibirRevisaoItens(itensDetectadosTemp);
+                        return;
+                    } else {
+                        alert("Nenhum item localizado nesta nota.");
+                    }
+                } catch (e) {
+                    let itensFallback = parseQrText(decodedText);
+                    if (itensFallback.length > 0) {
+                        itensDetectadosTemp = itensFallback;
+                        exibirRevisaoItens(itensFallback);
+                    } else {
+                        alert(`Não foi possível conectar com a API Python (${e.message}).\n\nUse o botão 'Colar Texto da Fazenda' para importar.`);
+                    }
+                    return;
+                }
+            }
+
+            // 3. Se for texto puro ou lista compacta
+            let itens = parseQrText(decodedText);
+            
+            if (itens.length === 0) {
+                let possivelValor = decodedText.match(/([0-9]+[.,][0-9]{2})/);
+                let valorIdentificado = possivelValor ? parseFloat(possivelValor[1].replace(',', '.')) : 0;
+                itens = [{
+                    nome: "Compra Supermercado",
+                    quantidade: 1,
+                    valorTotal: valorIdentificado > 0 ? valorIdentificado : 0,
+                    categoria: "Mercado"
+                }];
+            }
+
+            itensDetectadosTemp = itens;
+            exibirRevisaoItens(itens);
+        }
+
+        function onQrCodeErro(errorMessage) {}
+
+        // --- ENTRADA MANUAL DE TEXTO DA FAZENDA ---
+        window.abrirModalColarTexto = function() {
+            pararScannerCamera();
+            closeModal('modalScannerQR');
+            document.getElementById('txtManualFazenda').value = '';
+            openModal('modalColarTexto');
+        };
+
+        window.processarTextoManualColado = function() {
+            let texto = document.getElementById('txtManualFazenda').value;
+            if (!texto.trim()) {
+                alert("Cole o texto copiado da página da Fazenda.");
+                return;
+            }
+            let itens = parseQrText(texto);
+            if (itens.length === 0) {
+                alert("Nenhum item reconhecido no formato padrão. Verifique o texto colado.");
+                return;
+            }
+            closeModal('modalColarTexto');
+            itensDetectadosTemp = itens;
+            exibirRevisaoItens(itens);
+        };
+
+        function exibirRevisaoItens(itens) {
+            let container = document.getElementById('scannedItemsListPreview');
+            container.innerHTML = '';
+            
+            let totalGeral = 0;
+            let totalQtd = 0;
+
+            itens.forEach(item => {
+                totalGeral += item.valorTotal;
+                totalQtd += item.quantidade;
+
+                let row = document.createElement('div');
+                row.className = 'scanned-item-row';
+                row.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-color);">${item.quantidade}x ${item.nome}</div>
+                        <span style="color: var(--gray); font-size: 11px;"><i class="fa-solid fa-tag"></i> Mercado</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-weight: 700; color: var(--text-color);">${formatarMoeda(item.valorTotal)}</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('lblQtdDetectada').innerText = `${itens.length} SKUs (${totalQtd} un)`;
+            document.getElementById('lblTotalDetectado').innerText = formatarMoeda(totalGeral);
+            openModal('modalRevisaoQR');
+        }
+
+        window.confirmarImportacaoItensQR = function() {
+            if (!itensDetectadosTemp || itensDetectadosTemp.length === 0) {
+                closeModal('modalRevisaoQR');
+                return;
+            }
+
+            let totalImportado = 0;
+            let agora = Date.now();
+
+            itensDetectadosTemp.forEach((it, index) => {
+                totalImportado += it.valorTotal;
+                let nomeFormatado = it.quantidade > 1 ? `${it.quantidade}x ${it.nome.replace(/^\d+x\s*/i, '')}` : it.nome;
+                appData.itensCasa.unshift({
+                    id: agora + index,
+                    nome: nomeFormatado,
+                    quantidade: it.quantidade || 1,
+                    categoria: 'Mercado',
+                    status: 'Comprado',
+                    valorReal: parseFloat(it.valorTotal.toFixed(2))
+                });
+            });
+
+            registrarAtividade(`Importação: ${itensDetectadosTemp.length} itens lançados em Mercado — ${formatarMoeda(totalImportado)}`);
+            salvarDados();
+            closeModal('modalRevisaoQR');
+
+            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+        };
+
+        // --- ABA CASA: RENDER, CÁLCULO E EDIÇÃO COM QUANTIDADE ---
+        let filtroCasaAtual = 'todos';
+        window.filterCasa = function(cat, el) { 
+            filtroCasaAtual = cat; 
+            document.querySelectorAll('#casaFilterChips .chip').forEach(c => c.classList.remove('active')); 
+            if (el) el.classList.add('active'); 
+            renderizarItensCasa(); 
+        };
+        
+        function renderizarItensCasa() {
+            let container = document.getElementById('casaListContainer'); 
+            container.innerHTML = '';
+            let list = appData.itensCasa; 
+            if (filtroCasaAtual !== 'todos') list = list.filter(i => i.categoria === filtroCasaAtual);
+            if (list.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma compra ou item cadastrado aqui.</div>`; 
+                return; 
+            }
+            list.forEach(item => {
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div>
+                            <span class="badge ${item.status === 'Comprado' ? 'badge-status-bought' : 'badge-status-pending'}">${item.status}</span>
+                            <div class="list-card-title" style="margin-top: 4px;">${item.nome}</div>
+                        </div>
+                        <div style="font-weight: 700;">${formatarMoeda(item.valorReal)}</div>
+                    </div>
+                    <div class="list-card-details">
+                        <span><i class="fa-solid fa-tag"></i> ${item.categoria}</span>
+                        <div class="action-icon-group">
+                            <button class="icon-btn edit" onclick="editarItemCasa(${item.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="icon-btn delete" onclick="excluirItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.calcularTotalModalItem = function() {
+            let qtd = parseInt(document.getElementById('itemQuantidade').value) || 1;
+            let unit = parseFloat(document.getElementById('itemValorReal').value) || 0;
+            let total = qtd * unit;
+            document.getElementById('lblPreviaTotalItem').innerText = formatarMoeda(total);
+        };
+
+        window.openModalItemCasa = function() { 
+            editItemCasaId = null;
+            document.getElementById('modalItemCasaTitle').innerText = "Novo Item / Compra";
+            document.getElementById('itemNome').value = '';
+            document.getElementById('itemQuantidade').value = '1';
+            document.getElementById('itemCategoria').value = 'Mercado';
+            document.getElementById('itemStatus').value = 'Comprado';
+            document.getElementById('itemValorReal').value = '';
+            document.getElementById('lblPreviaTotalItem').innerText = 'R$ 0,00';
+            openModal('modalItemCasa'); 
+        };
+
+        window.editarItemCasa = function(id) {
+            let item = appData.itensCasa.find(i => i.id === id);
+            if (item) {
+                editItemCasaId = id;
+                document.getElementById('modalItemCasaTitle').innerText = "Editar Item / Compra";
+
+                let matchQtd = item.nome.match(/^(\d+)x\s+(.*)/i);
+                let qtd = matchQtd ? parseInt(matchQtd[1]) : (item.quantidade || 1);
+                let nomeLimpo = matchQtd ? matchQtd[2] : item.nome;
+
+                document.getElementById('itemNome').value = nomeLimpo;
+                document.getElementById('itemQuantidade').value = qtd;
+                document.getElementById('itemCategoria').value = item.categoria;
+                document.getElementById('itemStatus').value = item.status;
+                
+                let unitario = (item.valorReal / qtd);
+                document.getElementById('itemValorReal').value = unitario.toFixed(2);
+                document.getElementById('lblPreviaTotalItem').innerText = formatarMoeda(item.valorReal);
+
+                openModal('modalItemCasa');
+            }
+        };
+
+        window.salvarItemCasa = function() {
+            let nome = document.getElementById('itemNome').value.trim(); 
+            let qtd = parseInt(document.getElementById('itemQuantidade').value) || 1;
+            let categoria = document.getElementById('itemCategoria').value; 
+            let status = document.getElementById('itemStatus').value; 
+            let valorUnitario = parseFloat(document.getElementById('itemValorReal').value) || 0; 
+            
+            if (!nome || valorUnitario <= 0) { 
+                alert('Informe o nome e o valor do item.'); 
+                return; 
+            }
+
+            let valorTotalCalculado = parseFloat((qtd * valorUnitario).toFixed(2));
+            let nomeFinal = qtd > 1 ? `${qtd}x ${nome.replace(/^\d+x\s*/i, '')}` : nome.replace(/^\d+x\s*/i, '');
+
+            if (editItemCasaId !== null) {
+                let index = appData.itensCasa.findIndex(i => i.id === editItemCasaId);
+                if (index !== -1) {
+                    appData.itensCasa[index].nome = nomeFinal;
+                    appData.itensCasa[index].quantidade = qtd;
+                    appData.itensCasa[index].categoria = categoria;
+                    appData.itensCasa[index].status = status;
+                    appData.itensCasa[index].valorReal = valorTotalCalculado;
+                    registrarAtividade(`Edição: ${nomeFinal} — ${formatarMoeda(valorTotalCalculado)}`);
+                }
+            } else {
+                appData.itensCasa.unshift({ 
+                    id: Date.now(), 
+                    nome: nomeFinal, 
+                    quantidade: qtd,
+                    categoria, 
+                    status, 
+                    valorReal: valorTotalCalculado 
+                }); 
+                registrarAtividade(`Compra: ${nomeFinal} — ${formatarMoeda(valorTotalCalculado)}`);
+            }
+
+            salvarDados(); 
+            closeModal('modalItemCasa'); 
+        };
+
+        window.excluirItem = function(id) { 
+            appData.itensCasa = appData.itensCasa.filter(i => i.id !== id); 
+            salvarDados(); 
+        };
+
+        // --- ABA FINANÇAS: CONTAS ---
+        function renderizarContas() {
+            let container = document.getElementById('financasContasContainer'); 
+            container.innerHTML = '';
+            if (appData.contas.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma conta cadastrada.</div>`; 
+                return; 
+            }
+            appData.contas.forEach(c => {
+                let fixaBadge = c.recorrente ? `<span title="Conta Fixa" style="color: var(--info); margin-left: 5px;"><i class="fa-solid fa-rotate"></i></span>` : '';
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
+                card.innerHTML = `<div class="list-card-header"><div><span class="badge ${c.status === 'paga' ? 'badge-status-bought' : 'badge-status-pending'}">${c.status.toUpperCase()}</span><div class="list-card-title" style="margin-top: 4px;">${c.nome} ${fixaBadge}</div></div><div style="font-weight: 700;">${formatarMoeda(c.valor)}</div></div><div class="list-card-details"><span>Vencimento: ${c.vencimento ? c.vencimento.split('-').reverse().join('/') : 'N/A'}</span><div class="action-icon-group"><button class="icon-btn check" onclick="alternarConta(${c.id})"><i class="fa-solid fa-check"></i></button><button class="icon-btn delete" onclick="excluirConta(${c.id})"><i class="fa-solid fa-trash"></i></button></div></div>`;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarConta = function() {
+            let nome = document.getElementById('contaNome').value; 
+            let categoria = document.getElementById('contaCategoria').value; 
+            let valor = parseFloat(document.getElementById('contaValor').value) || 0; 
+            let vencimento = document.getElementById('contaVencimento').value; 
+            let status = document.getElementById('contaStatus').value; 
+            let recorrente = document.getElementById('contaRecorrente').checked; 
+            
+            if (!nome || valor <= 0) { 
+                alert('Informe a descrição e o valor.'); 
+                return; 
+            }
+            appData.contas.push({ id: Date.now(), nome, categoria, valor, vencimento, status, recorrente }); 
+            registrarAtividade(`Conta: ${nome} — ${formatarMoeda(valor)}`);
+            salvarDados(); 
+            closeModal('modalConta'); 
+            document.getElementById('contaNome').value = ''; 
+            document.getElementById('contaValor').value = '';
+        };
+
+        window.alternarConta = function(id) { 
+            let c = appData.contas.find(x => x.id === id); 
+            if (c) { 
+                c.status = c.status === 'paga' ? 'pendente' : 'paga'; 
+                salvarDados(); 
+            } 
+        };
+
+        window.excluirConta = function(id) { 
+            appData.contas = appData.contas.filter(x => x.id !== id); 
+            salvarDados(); 
+        };
+
+        // --- ORÇAMENTO POR CATEGORIA (INTEGRADO TOTAL: FINANÇAS + CASA) ---
+        function renderizarOrcamento() {
+            let container = document.getElementById('financasOrcamentoContainer'); 
+            container.innerHTML = '';
+            
+            const categoriasLista = ['Mercado', 'Casa', 'Contas Fixas', 'Lazer', 'Tecnologia'];
+
+            categoriasLista.forEach(catNome => {
+                let planejado = appData.orcamento[catNome] || 0; 
+                let totalGasto = 0;
+
+                if (catNome === 'Mercado') {
+                    // Soma Mercado da aba Casa (cupom fiscal/compras) + Contas pagas de Mercado em Finanças
+                    let gastoCasa = appData.itensCasa
+                        .filter(i => i.status === 'Comprado' && i.categoria === 'Mercado')
+                        .reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
+                    let gastoConta = appData.contas
+                        .filter(c => c.status === 'paga' && c.categoria === 'Mercado')
+                        .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                    totalGasto = gastoCasa + gastoConta;
+                } else if (catNome === 'Casa') {
+                    // Soma Manutenção da aba Casa + Contas pagas de Casa em Finanças
+                    let gastoCasa = appData.itensCasa
+                        .filter(i => i.status === 'Comprado' && i.categoria === 'Casa')
+                        .reduce((acc, i) => acc + (parseFloat(i.valorReal) || 0), 0);
+                    let gastoConta = appData.contas
+                        .filter(c => c.status === 'paga' && c.categoria === 'Casa')
+                        .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                    totalGasto = gastoCasa + gastoConta;
+                } else {
+                    // Contas Fixas, Lazer e Tecnologia: Puxam exclusivamente de Finanças
+                    totalGasto = appData.contas
+                        .filter(c => c.status === 'paga' && c.categoria === catNome)
+                        .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+                }
+
+                let sobra = planejado - totalGasto; 
+                let estourou = sobra < 0;
+                let card = document.createElement('div'); 
+                card.className = 'list-card';
+                card.innerHTML = `
+                    <div class="list-card-header">
+                        <div class="list-card-title">${catNome}</div>
+                        <div style="font-size: 12px; font-weight: bold; color: ${estourou ? 'var(--danger)' : 'var(--success)'};">
+                            ${estourou ? 'Estourou ' + formatarMoeda(Math.abs(sobra)) : 'Sobra ' + formatarMoeda(sobra)}
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;">
+                        <span>Teto: ${formatarMoeda(planejado)}</span>
+                        <span>Real: ${formatarMoeda(totalGasto)}</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${Math.min((totalGasto / (planejado || 1)) * 100, 100)}%; background: ${estourou ? 'var(--danger)' : 'var(--success)'};"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.salvarOrcamento = function() { 
+            appData.orcamento.Casa = parseFloat(document.getElementById('orcCasa').value) || 0; 
+            appData.orcamento.Mercado = parseFloat(document.getElementById('orcMercado').value) || 0; 
+            appData.orcamento['Contas Fixas'] = parseFloat(document.getElementById('orcContasFixas').value) || 0; 
+            appData.orcamento.Lazer = parseFloat(document.getElementById('orcLazer').value) || 0; 
+            appData.orcamento.Tecnologia = parseFloat(document.getElementById('orcTecnologia').value) || 0; 
+            salvarDados(); 
+            closeModal('modalOrcamento'); 
+        };
+
+        window.salvarRenda = function() { 
+            appData.renda.p1_20 = parseFloat(document.getElementById('rendaP1_20').value) || 0; 
+            appData.renda.p2_20 = parseFloat(document.getElementById('rendaP2_20').value) || 0; 
+            appData.renda.extra = parseFloat(document.getElementById('rendaExtra').value) || 0; 
+            salvarDados(); 
+            closeModal('modalRenda'); 
+        };
+
+        // --- ABA METAS ---
+        function renderizarObjetivos() {
+            let container = document.getElementById('objetivosContainer'); 
+            container.innerHTML = '';
+            if (appData.objetivos.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Nenhuma meta ativa.</div>`; 
+                return; 
+            }
+            appData.objetivos.forEach(o => {
+                let div = document.createElement('div'); 
+                div.className = 'list-card';
+                div.innerHTML = `
+                    <div class="list-card-header">
+                        <div class="list-card-title">${o.nome}</div>
+                        <div class="action-icon-group">
+                            <button class="icon-btn edit" onclick="editarMeta(${o.id})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="icon-btn delete" onclick="excluirMeta(${o.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--gray); display: flex; justify-content: space-between;">
+                        <span>Guardado: ${formatarMoeda(o.valorGuardado)}</span>
+                        <span>Meta: ${formatarMoeda(o.valorDesejado)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.openModalObjetivo = function() { 
+            editMetaId = null; 
+            document.getElementById('modalObjetivoTitle').innerText = "Nova Meta do Casal";
+            document.getElementById('objNome').value = '';
+            document.getElementById('objValorDesejado').value = '';
+            document.getElementById('objValorGuardado').value = '';
+            openModal('modalObjetivo'); 
+        };
+
+        window.editarMeta = function(id) {
+            let meta = appData.objetivos.find(o => o.id === id);
+            if (meta) {
+                editMetaId = id; 
+                document.getElementById('modalObjetivoTitle').innerText = "Editar Meta do Casal";
+                document.getElementById('objNome').value = meta.nome;
+                document.getElementById('objValorDesejado').value = meta.valorDesejado;
+                document.getElementById('objValorGuardado').value = meta.valorGuardado;
+                openModal('modalObjetivo');
+            }
+        };
+
+        window.salvarObjetivo = function() {
+            let nome = document.getElementById('objNome').value;
+            let valorDesejado = parseFloat(document.getElementById('objValorDesejado').value) || 0;
+            let valorGuardado = parseFloat(document.getElementById('objValorGuardado').value) || 0;
+            if (!nome || valorDesejado <= 0) return;
+            if (editMetaId !== null) {
+                let index = appData.objetivos.findIndex(o => o.id === editMetaId);
+                if (index !== -1) {
+                    appData.objetivos[index].nome = nome;
+                    appData.objetivos[index].valorDesejado = valorDesejado;
+                    appData.objetivos[index].valorGuardado = valorGuardado;
+                }
+            } else { 
+                appData.objetivos.push({ id: Date.now(), nome, valorDesejado, valorGuardado }); 
+            }
+            salvarDados(); 
+            closeModal('modalObjetivo');
+        };
+
+        window.excluirMeta = function(id) { 
+            appData.objetivos = appData.objetivos.filter(o => o.id !== id); 
+            salvarDados(); 
+        };
+
+        // --- GERAIS & EXPORTAÇÃO ---
+        window.resetarDados = async function() { 
+            if (confirm('Tem certeza? Isso apagará os dados do navegador e da nuvem Firebase.')) { 
+                localStorage.removeItem('app_casal_data_v1'); 
+                try { await setDoc(window.docRef, {}); } catch(e) {} 
+                location.reload(); 
+            } 
+        };
+
+        function registrarAtividade(texto) { 
+            let data = new Date().toLocaleDateString('pt-BR'); 
+            appData.atividades.unshift({ texto, data }); 
+            if (appData.atividades.length > 15) appData.atividades.pop(); 
+        }
+
+        function renderizarAtividades() { 
+            let container = document.getElementById('homeActivityLogContainer'); 
+            container.innerHTML = ''; 
+            let items = appData.atividades.slice(0, 5); 
+            if (items.length === 0) { 
+                container.innerHTML = `<div class="empty-state">Sem atividades recentes.</div>`; 
+                return; 
+            } 
+            items.forEach(a => { 
+                let d = document.createElement('div'); 
+                d.style.fontSize = '11px'; 
+                d.style.color = 'var(--gray)'; 
+                d.style.padding = '4px 0'; 
+                d.innerHTML = `<b>${a.data}:</b> ${a.texto}`; 
+                container.appendChild(d); 
+            }); 
+        }
+
+        function formatarMoeda(val) { 
+            return 'R$ ' + (parseFloat(val) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+        }
+
+        window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; };
+        window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
+        window.openModalConta = function() { openModal('modalConta'); };
+        
+        window.openModalRenda = function() { 
+            document.getElementById('rendaP1_20').value = appData.renda.p1_20 || ''; 
+            document.getElementById('rendaP2_20').value = appData.renda.p2_20 || ''; 
+            document.getElementById('rendaExtra').value = appData.renda.extra || ''; 
+            openModal('modalRenda'); 
+        };
+
+        window.openModalOrcamento = function() { 
+            document.getElementById('orcMercado').value = appData.orcamento.Mercado; 
+            document.getElementById('orcCasa').value = appData.orcamento.Casa; 
+            document.getElementById('orcContasFixas').value = appData.orcamento['Contas Fixas']; 
+            document.getElementById('orcLazer').value = appData.orcamento.Lazer; 
+            document.getElementById('orcTecnologia').value = appData.orcamento.Tecnologia; 
+            openModal('modalOrcamento'); 
+        };
+
+        window.exportarDados = function() { 
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2)); 
+            let dl = document.createElement('a'); 
+            dl.setAttribute("href", dataStr); 
+            dl.setAttribute("download", "backup_app_casal.json"); 
+            dl.click(); 
+        };
+    </script>
+</body>
+</html>
